@@ -1,0 +1,19 @@
+# PostgreSQL Client Authentication Configuration File
+# ====================================================
+# This file controls:
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# Local connections
+local   replication     all                                     peer
+local   all             postgres                                peer
+local   all             all                                     md5
+
+# IPv4 local connections for replication
+host    replication     all             127.0.0.1/32            scram-sha-256
+# IPv6 local connections for replication
+host    replication     all             ::1/128                 scram-sha-256
+
+# Allow all users from localhost
+host    all             all             127.0.0.1/32            scram-sha-256
+host    all             all             ::1/128                 scram-sha-256

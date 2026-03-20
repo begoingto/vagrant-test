@@ -1,0 +1,33 @@
+- name: Install PostgreSQL 17
+  ansible.builtin.dnf:
+    name: postgresql17-server
+    state: present
+
+- name: Initialize PostgreSQL database
+  ansible.builtin.shell: |
+    systemctl stop postgresql || true
+    rm -rf /var/lib/pgsql/data
+    postgresql-setup --initdb
+    systemctl enable --now postgresql
+  args:
+    creates: /var/lib/pgsql/data/pg_hba.conf
+  register: initdb_result
+  changed_when: initdb_result.rc == 0
+  no_log: false
+
+- name: Deploy custom pg_hba.conf from template
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: /var/lib/pgsql/data/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: "0600"
+    backup: yes
+  notify: Restart PostgreSQL
+
+- name: Ensure PostgreSQL is running and enabled
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: yes
+  no_log: true
