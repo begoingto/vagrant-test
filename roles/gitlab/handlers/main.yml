@@ -1,0 +1,7 @@
+- name: Restart Gitlab service
+  ansible.builtin.service:
+    name: gitlab-runsvdir
+    state: restarted
+
+- name: Reconfigure Gitlab
+  ansible.builtin.command: gitlab-ctl reconfigure
