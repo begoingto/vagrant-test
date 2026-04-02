@@ -30,11 +30,13 @@
 
 - name: Install GitLab CE
   ansible.builtin.dnf:
-    name: "gitlab-ce-18.9.2-ce.0.amazon2023"
+    name: "gitlab-ce-18.10.0-ce.0.amazon2023"
     state: present
     disable_gpg_check: false
   environment:
-    EXTERNAL_URL: "{{ ansible_host }}:8080"
+    EXTERNAL_URL: "{{ ansible_host }}:5050"
+    GITLAB_ROOT_EMAIL: "begoingto.me@gmail.com"
+    # GITLAB_ROOT_PASSWORD: ""
 # - name: Replace Config File
 #   ansible.builtin.template:
 #     src: gitlab.rb.j2
