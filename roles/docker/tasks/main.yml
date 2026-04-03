@@ -20,12 +20,15 @@
     append: yes
   no_log: true
 
-- name: Install Docker Compose V2 plugin (pinned version)
-  block:
-    - name: Set Docker Compose version (change this when you want to upgrade)
-      ansible.builtin.set_fact:
-        docker_compose_version: "v5.1.1"
+- name: Get docker compose version
+  ansible.builtin.command: docker compose version --short
+  register: get_docker_compose
+  ignore_errors: true
+  no_log: false
 
+- name: Install Docker Compose V2 plugin (pinned version)
+  when: get_docker_compose.stdout != docker_compose_version
+  block:
     - name: Create Docker CLI plugins directory
       ansible.builtin.file:
         path: /usr/local/lib/docker/cli-plugins
@@ -34,7 +37,7 @@
 
     - name: Download Docker Compose {{ docker_compose_version }}
       ansible.builtin.get_url:
-        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-{{ ansible_architecture | lower }}"
+        url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-linux-{{ ansible_architecture | lower }}"
         dest: /usr/local/lib/docker/cli-plugins/docker-compose
         mode: "0755"
         force: yes
