@@ -1,0 +1,23 @@
+- name: Install exact Docker version 25.0.14-1.amzn2023.0.2
+  ansible.builtin.dnf:
+    name: "docker-25.0.14-1.amzn2023.0.2"
+    state: present
+    update_cache: yes
+    allow_downgrade: yes
+  become: true
+
+- name: Enable and start Docker service
+  ansible.builtin.systemd:
+    name: docker
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  become: true
+  no_log: true
+
+- name: Add current user to the docker group (non-root docker usage)
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+  no_log: true
