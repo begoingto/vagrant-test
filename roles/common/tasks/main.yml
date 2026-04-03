@@ -17,10 +17,21 @@
   ansible.builtin.dnf:
     update_cache: yes
 
-- name: Install when amazon linux 2023
+- name: Amazon linux 2023
   when: ansible_facts.distribution == "Amazon" and ansible_facts.distribution_major_version == "2023"
-  ansible.builtin.dnf:
-    name:
-      - network-scripts
-      - htop
-    state: present
+  block:
+    - name: Install network-scripts and htop
+      ansible.builtin.dnf:
+        name:
+          - network-scripts
+          - htop
+        state: present
+
+    - name: "Upgrade Amazon Linux 2023 to specific release version {{ releasever }}"
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+        update_cache: yes
+        releasever: "{{ releasever }}"
+        allow_downgrade: yes
+      become: true
