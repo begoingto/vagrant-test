@@ -1,3 +1,26 @@
+- name: Debug os family, distribution, and distribution major version
+  ansible.builtin.debug:
+    msg: "OS Family: {{ ansible_facts.os_family }}\nDistribution: {{ ansible_facts.distribution }}\n Distribution Major Version: {{ ansible_facts.distribution_major_version }}"
+
 - name: Set timezone to Asia/Phnom Penh
   ansible.builtin.timezone:
     name: Asia/Phnom_Penh
+
+- name: Update apt cache
+  when: ansible_facts.os_family == "Debian"
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Update yum cache
+  when: ansible_facts.os_family == "RedHat"
+  ansible.builtin.dnf:
+    update_cache: yes
+
+- name: Install when amazon linux 2023
+  when: ansible_facts.distribution == "Amazon" and ansible_facts.distribution_major_version == "2023"
+  ansible.builtin.dnf:
+    name:
+      - network-scripts
+      - htop
+    state: present
