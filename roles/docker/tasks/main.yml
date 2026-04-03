@@ -4,7 +4,6 @@
     state: present
     update_cache: yes
     allow_downgrade: yes
-  become: true
 
 - name: Enable and start Docker service
   ansible.builtin.systemd:
@@ -12,7 +11,6 @@
     enabled: yes
     state: started
     daemon_reload: yes
-  become: true
   no_log: true
 
 - name: Add current user to the docker group (non-root docker usage)
@@ -21,3 +19,22 @@
     groups: docker
     append: yes
   no_log: true
+
+- name: Install Docker Compose V2 plugin (pinned version)
+  block:
+    - name: Set Docker Compose version (change this when you want to upgrade)
+      ansible.builtin.set_fact:
+        docker_compose_version: "v5.1.1"
+
+    - name: Create Docker CLI plugins directory
+      ansible.builtin.file:
+        path: /usr/local/lib/docker/cli-plugins
+        state: directory
+        mode: "0755"
+
+    - name: Download Docker Compose {{ docker_compose_version }}
+      ansible.builtin.get_url:
+        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-{{ ansible_architecture | lower }}"
+        dest: /usr/local/lib/docker/cli-plugins/docker-compose
+        mode: "0755"
+        force: yes
