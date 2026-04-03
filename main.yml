@@ -3,6 +3,7 @@
   become: yes
   roles:
     - common
+  tags: common
 
 - name: Setup PostgreSQL 17
   hosts: all
@@ -27,3 +28,10 @@
     - gitlab
   tags:
     - gitlab
+
+- name: Setup Jenkins
+  hosts: jenkins_vm
+  become: yes
+  roles:
+    - jenkins
+  tags: jen
