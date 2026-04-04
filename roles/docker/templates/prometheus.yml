@@ -9,3 +9,9 @@ scrape_configs:
     # basic_auth:
     #   username: "{{ prometheus_user }}"
     #   password: "{{ prometheus_password }}"
+
+  - job_name: "swarm-node2"
+    metrics_path: /metrics
+    scheme: "http"
+    static_configs:
+      - targets: ["swarm-node2.begoingto.test"]

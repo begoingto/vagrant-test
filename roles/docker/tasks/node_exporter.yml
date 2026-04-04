@@ -27,3 +27,32 @@
 #       # networks:
 #       #   "{{ traefik_network_name }}":
 #       #     external: true
+
+---
+- name: Create swarm service node_exporter using traefik network
+  when: inventory_hostname == swarm_leader
+  run_once: true
+  community.docker.docker_swarm_service:
+    name: node_exporter
+    image: quay.io/prometheus/node-exporter:v1.10.2
+    replicas: 1
+    placement:
+      constraints:
+        - "node.hostname == {{ groups['managers'][1] }}"
+    networks:
+      - "{{ traefik_network_name }}"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.node_exporter.rule: "Host(`{{ groups['managers'][1] }}.begoingto.test`)"
+      traefik.http.routers.node_exporter.entrypoints: "web"
+      traefik.http.services.node_exporter.loadbalancer.server.port: "9100"
+    update_config:
+      parallelism: 1
+      delay: 10s
+      failure_action: rollback
+      order: start-first
+    restart_config:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+    force_update: "{{ force_redeploy }}"
