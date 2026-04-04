@@ -14,7 +14,13 @@ entryPoints:
   web-node-exporter:
     address: ":9100"
 metrics:
+  addInternals: true
   prometheus:
+    addRoutersLabels: true
+    addServicesLabels: true
+    addEntryPointsLabels: true
+    headerLabels:
+      useragent: User-Agent
     buckets:
       - 0.1
       - 0.3
