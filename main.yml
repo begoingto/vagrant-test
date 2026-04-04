@@ -6,28 +6,25 @@
   tags: common
 
 - name: Setup PostgreSQL 17
-  hosts: all
+  hosts: pgsql
   become: yes
   roles:
     - pgsql
-  tags:
-    - pgsql
+  tags: pgsql
 
 - name: Setup Valkey
-  hosts: all
+  hosts: valkey
   become: yes
   roles:
     - valkey
-  tags:
-    - valkey
+  tags: valkey
 
 - name: Setup GitLab CE
-  hosts: all
+  hosts: gitlab
   become: yes
   roles:
     - gitlab
-  tags:
-    - gitlab
+  tags: gitlab
 
 - name: Setup Jenkins
   hosts: jenkins_vm

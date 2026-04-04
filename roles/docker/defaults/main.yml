@@ -1,1 +1,2 @@
 docker_compose_version: "5.1.1"
+docker_engine_version: "25.0.14"

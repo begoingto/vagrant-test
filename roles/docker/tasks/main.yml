@@ -1,6 +1,6 @@
-- name: Install exact Docker version 25.0.14-1.amzn2023.0.2
+- name: "Install exact Docker version {{docker_engine_version}}-1.amzn2023.0.2"
   ansible.builtin.dnf:
-    name: "docker-25.0.14-1.amzn2023.0.2"
+    name: "docker-{{docker_engine_version}}-1.amzn2023.0.2"
     state: present
     update_cache: yes
     allow_downgrade: yes
