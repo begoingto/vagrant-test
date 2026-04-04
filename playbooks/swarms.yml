@@ -40,3 +40,9 @@
         name: docker
         tasks_from: nginx.yml
       tags: nginx
+
+    - name: Include role docker with task to create prometheus service
+      ansible.builtin.import_role:
+        name: docker
+        tasks_from: prometheus.yml
+      tags: prometheus

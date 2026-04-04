@@ -1,0 +1,35 @@
+---
+- name: Upload prometheus configuration file
+  become: true
+  ansible.builtin.template:
+    src: prometheus.yml
+    dest: /opt/prometheus.yml
+
+- name: Create swarm service prometheus using traefik network
+  when: inventory_hostname == swarm_leader
+  run_once: true
+  community.docker.docker_swarm_service:
+    name: prometheus
+    image: prom/prometheus:v3
+    mounts:
+      - type: bind
+        source: /opt/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+    replicas: 2
+    networks:
+      - "{{ traefik_network_name }}"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.prometheus.rule: "Host(`prom.begoingto.test`)"
+      traefik.http.routers.prometheus.entrypoints: "web"
+      traefik.http.services.prometheus.loadbalancer.server.port: "9090"
+    update_config:
+      parallelism: 1
+      delay: 10s
+      failure_action: rollback
+      order: start-first
+    restart_config:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+    force_update: "{{ force_redeploy }}"
