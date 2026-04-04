@@ -22,4 +22,4 @@
       condition: on-failure
       delay: 5s
       max_attempts: 3
-    force_update: "{{ force_redeploy | default(false) | bool }}"
+    force_update: "{{ force_redeploy }}"
