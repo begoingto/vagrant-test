@@ -1,13 +1,27 @@
 ---
-- name: Configure Traefik
+- name: Configure Docker Swarm
   hosts: swarm
   become: false
   gather_facts: false
   tasks:
     - name: Check if node is already part of a Swarm
       community.docker.docker_swarm_info:
+        nodes: true
       register: swarm_info
       ignore_errors: true
+      tags: always
+      no_log: true
+
+    - name: Learder Node
+      when: swarm_info.nodes is defined
+      ansible.builtin.debug:
+        msg: "{{ swarm_info.nodes | selectattr('ManagerStatus', '==', 'Leader') | first }}"
+      tags: always
+
+    - name: Set fact current learder node
+      ansible.builtin.set_fact:
+        swarm_leader: "{{ (swarm_info.nodes | selectattr('ManagerStatus', '==', 'Leader') | first).Hostname }}"
+      tags: always
 
     - name: Import Docker Swarm manager setup tasks
       ansible.builtin.import_role:

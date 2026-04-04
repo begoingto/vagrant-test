@@ -11,8 +11,7 @@
     dest: /opt/traefik.yml
 
 - name: Create Swarm services for Traefik
-  when: inventory_hostname == groups['managers'][0]
-  run_once: true
+  when: inventory_hostname == swarm_leader
   register: service_result
   community.docker.docker_swarm_service:
     name: traefik
@@ -46,5 +45,6 @@
     force_update: "{{ force_redeploy | default(false) | bool }}"
 
 - name: Show if service was updated/redeployed
+  when: inventory_hostname == swarm_leader
   ansible.builtin.debug:
     msg: "Service changed: {{ service_result.changed }}"

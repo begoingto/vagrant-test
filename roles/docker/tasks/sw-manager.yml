@@ -1,12 +1,3 @@
-- name: Check if node is already part of a Swarm
-  community.docker.docker_swarm_info:
-  register: swarm_info
-  ignore_errors: true
-
-- name: Debug groups
-  ansible.builtin.debug:
-    msg: "Groups: {{ groups['managers'] }}"
-
 - name: Initialize Swarm on the first manager only (manager1)
   community.docker.docker_swarm:
     state: present

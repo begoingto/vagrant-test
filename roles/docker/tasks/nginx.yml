@@ -1,6 +1,6 @@
 ---
 - name: Create swarm service nginx using traefik network
-  when: inventory_hostname == groups['managers'][0]
+  when: inventory_hostname == swarm_leader
   run_once: true
   community.docker.docker_swarm_service:
     name: nginx
