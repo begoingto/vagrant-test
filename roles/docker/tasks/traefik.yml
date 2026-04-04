@@ -1,6 +1,6 @@
 - name: Create Traefik network
   community.docker.docker_network:
-    name: traefik
+    name: "{{ traefik_network_name }}"
     driver: overlay
     state: present
 
@@ -13,9 +13,10 @@
 - name: Create Swarm services for Traefik
   when: inventory_hostname == groups['managers'][0]
   run_once: true
+  register: service_result
   community.docker.docker_swarm_service:
     name: traefik
-    image: traefik:v3.6.12
+    image: "traefik:{{ traefik_version }}"
     replicas: 2
     mounts:
       - type: bind
@@ -25,7 +26,7 @@
         source: /opt/traefik.yml
         target: /etc/traefik/traefik.yml
     networks:
-      - traefik
+      - name: "{{ traefik_network_name }}"
     publish:
       - published_port: 80
         target_port: 80
@@ -33,3 +34,17 @@
         target_port: 443
       - published_port: 8080
         target_port: 8080
+    update_config:
+      parallelism: 1
+      delay: 10s
+      failure_action: rollback
+      order: start-first
+    restart_config:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+    force_update: "{{ force_redeploy | default(false) | bool }}"
+
+- name: Show if service was updated/redeployed
+  ansible.builtin.debug:
+    msg: "Service changed: {{ service_result.changed }}"

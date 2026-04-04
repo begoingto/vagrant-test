@@ -1,2 +1,4 @@
 docker_compose_version: "5.1.1"
 docker_engine_version: "25.0.14"
+traefik_version: "v3.6.12"
+traefik_network_name: "traefik"

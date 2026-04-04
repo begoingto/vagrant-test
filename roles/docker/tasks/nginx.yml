@@ -1,0 +1,25 @@
+---
+- name: Create swarm service nginx using traefik network
+  when: inventory_hostname == groups['managers'][0]
+  run_once: true
+  community.docker.docker_swarm_service:
+    name: nginx
+    image: nginx:latest
+    replicas: 2
+    networks:
+      - "{{ traefik_network_name }}"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.nginx.rule: "Host(`nginx.begoingto.test`)"
+      traefik.http.routers.nginx.entrypoints: "web"
+      traefik.http.services.nginx.loadbalancer.server.port: "80"
+    update_config:
+      parallelism: 1
+      delay: 10s
+      failure_action: rollback
+      order: start-first
+    restart_config:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+    force_update: "{{ force_redeploy | default(false) | bool }}"

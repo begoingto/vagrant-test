@@ -1,0 +1,28 @@
+---
+- name: Configure Traefik
+  hosts: swarm
+  become: false
+  gather_facts: false
+  tasks:
+    - name: Check if node is already part of a Swarm
+      community.docker.docker_swarm_info:
+      register: swarm_info
+      ignore_errors: true
+
+    - name: Import Docker Swarm manager setup tasks
+      ansible.builtin.import_role:
+        name: docker
+        tasks_from: sw-manager.yml
+      tags: sw_manager
+
+    - name: Include role docker with task to create traefik network
+      ansible.builtin.import_role:
+        name: docker
+        tasks_from: traefik.yml
+      tags: traefik
+
+    - name: Include role docker with task to create nginx service
+      ansible.builtin.import_role:
+        name: docker
+        tasks_from: nginx.yml
+      tags: nginx
