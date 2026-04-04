@@ -21,12 +21,12 @@
   changed_when: false
   when: inventory_hostname == groups['managers'][0]
 
-# - name: Get Swarm worker join token (optional for workers)
-#   ansible.builtin.command: docker swarm join-token worker -q
-#   register: worker_token
-#   run_once: true
-#   changed_when: false
-#   when: inventory_hostname == groups['managers'][0]
+- name: Get Swarm worker join token (optional for workers)
+  ansible.builtin.command: docker swarm join-token worker -q
+  register: worker_token
+  run_once: true
+  changed_when: false
+  when: inventory_hostname == groups['managers'][0]
 
 - name: Join additional managers to the Swarm
   community.docker.docker_swarm:
