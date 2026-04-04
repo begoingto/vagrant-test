@@ -46,3 +46,9 @@
         name: docker
         tasks_from: prometheus.yml
       tags: prometheus
+
+    - name: Include role docker with task to create grafana service
+      ansible.builtin.import_role:
+        name: docker
+        tasks_from: grafana.yml
+      tags: grafana

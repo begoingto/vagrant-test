@@ -1,0 +1,24 @@
+- name: Create swarm service grafana using traefik network
+  when: inventory_hostname == swarm_leader
+  run_once: true
+  community.docker.docker_swarm_service:
+    name: grafana
+    image: grafana/grafana:13.0.0-23826080413
+    replicas: 1
+    networks:
+      - "{{ traefik_network_name }}"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.grafana.rule: "Host(`gra.begoingto.test`)"
+      traefik.http.routers.grafana.entrypoints: "web"
+      traefik.http.services.grafana.loadbalancer.server.port: "3000"
+    update_config:
+      parallelism: 1
+      delay: 10s
+      failure_action: rollback
+      order: start-first
+    restart_config:
+      condition: on-failure
+      delay: 5s
+      max_attempts: 3
+    force_update: "{{ force_redeploy }}"
