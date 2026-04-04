@@ -46,6 +46,3 @@
         dest: /usr/local/lib/docker/cli-plugins/docker-compose
         mode: "0755"
         force: yes
-
-- name: Include Docker Swarm role for manager nodes
-  ansible.builtin.include_tasks: swarm_manager.yml

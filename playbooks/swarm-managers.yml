@@ -1,0 +1,10 @@
+---
+- name: Configure Docker Swarm Managers
+  hosts: swarm
+  become: false
+  gather_facts: false
+  tasks:
+    - name: Import Docker Swarm manager setup tasks
+      ansible.builtin.import_role:
+        name: docker
+        tasks_from: sw-manager.yml
