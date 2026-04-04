@@ -26,6 +26,7 @@
         target: /etc/traefik/traefik.yml
     networks:
       - name: "{{ traefik_network_name }}"
+      - name: "host"
     publish:
       - published_port: 80
         target_port: 80

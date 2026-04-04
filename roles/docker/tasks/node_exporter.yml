@@ -1,0 +1,29 @@
+# - name: Create Container for node exporter'
+#   when: inventory_hostname == groups['managers'][1]
+#   community.docker.docker_compose_v2:
+#     project_name: node_exporter
+#     definition:
+#       services:
+#         node_exporter:
+#           container_name: node_exporter
+#           image: quay.io/prometheus/node-exporter:v1.10.2
+#           restart: unless-stopped
+#           network_mode: host
+#           pid: host
+#           privileged: true
+#           command:
+#             - "--path.rootfs=/host"
+#           volumes:
+#             - "/:/host:ro,rslave"
+#           labels:
+#             traefik.enable: "true"
+#             traefik.tcp.routers.swarm-node2.rule: "ClientIP(`{{ansible_host}}`)"
+#             traefik.tcp.routers.swarm-node2.entrypoints: "tcp-ep"
+#             traefik.tcp.routers.swarm-node2.service: "node_exporter"
+#             traefik.tcp.routers.swarm-node2.priority: "10"
+#             traefik.tcp.routers.swarm-node2.loadbalancer.server.port: "9100"
+#       #     networks:
+#       #       - "{{ traefik_network_name }}"
+#       # networks:
+#       #   "{{ traefik_network_name }}":
+#       #     external: true
