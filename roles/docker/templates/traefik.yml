@@ -13,6 +13,13 @@ entryPoints:
     address: ":443"
   web-node-exporter:
     address: ":9100"
+metrics:
+  prometheus:
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
 providers:
   swarm:
     endpoint: "unix:///var/run/docker.sock"

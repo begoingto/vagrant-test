@@ -15,3 +15,9 @@ scrape_configs:
     scheme: "http"
     static_configs:
       - targets: ["swarm-node2.begoingto.test"]
+
+  - job_name: "traefik"
+    metrics_path: /metrics
+    scheme: "http"
+    static_configs:
+      - targets: ["192.168.56.11:8080"]
