@@ -13,24 +13,6 @@ entryPoints:
     address: ":443"
   tcp-ep:
     address: ":9100/tcp"
-tcp:
-  services:
-    node_exporter:
-      loadBalancer:
-        servers:
-          - address: "192.168.56.12"
-        healthCheck:
-          send: "PING"
-          expect: "PONG"
-          interval: "10s"
-          timeout: "3s"
-  routers:
-    swarm-node2:
-      rule: "ClientIP(`192.168.56.12`)"
-      entryPoints:
-        - "tcp-ep"
-      service: node_exporter
-      priority: 10
 providers:
   swarm:
     endpoint: "unix:///var/run/docker.sock"
