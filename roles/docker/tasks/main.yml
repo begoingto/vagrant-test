@@ -20,6 +20,11 @@
     append: yes
   no_log: true
 
+- name: Install python3-docker module for Ansible Docker modules
+  ansible.builtin.dnf:
+    name: python3-docker
+    state: present
+
 - name: Get docker compose version
   ansible.builtin.command: docker compose version --short
   register: get_docker_compose
@@ -41,3 +46,6 @@
         dest: /usr/local/lib/docker/cli-plugins/docker-compose
         mode: "0755"
         force: yes
+
+- name: Include Docker Swarm role for manager nodes
+  ansible.builtin.include_tasks: swarm_manager.yml

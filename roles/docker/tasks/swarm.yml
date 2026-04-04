@@ -1,4 +1,0 @@
-- name: Check if node is already part of a Swarm
-  community.docker.docker_swarm_info:
-  register: swarm_info
-  ignore_errors: true
