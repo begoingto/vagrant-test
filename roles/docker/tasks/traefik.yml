@@ -5,6 +5,7 @@
     state: present
 
 - name: Upload traefik configuration file
+  become: true
   ansible.builtin.template:
     src: traefik.yml
     dest: /opt/traefik.yml

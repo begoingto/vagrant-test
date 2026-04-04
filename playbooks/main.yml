@@ -1,41 +1,41 @@
 - name: Setup common configurations
   hosts: all
-  become: yes
+  become: true
   roles:
     - common
   tags: common
 
 - name: Setup PostgreSQL 17
   hosts: pgsql
-  become: yes
+  become: true
   roles:
     - pgsql
   tags: pgsql
 
 - name: Setup Valkey
   hosts: valkey
-  become: yes
+  become: true
   roles:
     - valkey
   tags: valkey
 
 - name: Setup GitLab CE
   hosts: gitlab
-  become: yes
+  become: true
   roles:
     - gitlab
   tags: gitlab
 
 - name: Setup Jenkins
   hosts: jenkins_vm
-  become: yes
+  become: true
   roles:
     - jenkins
   tags: jen
 
 - name: Setup Docker
   hosts: swarm
-  become: yes
+  become: true
   roles:
     - docker
   tags: docker
