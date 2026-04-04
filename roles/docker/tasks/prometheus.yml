@@ -4,6 +4,16 @@
   ansible.builtin.template:
     src: prometheus.yml
     dest: /opt/prometheus.yml
+    mode: "0674"
+
+- name: Template to yaml file prometheus web config
+  become: true
+  ansible.builtin.copy:
+    content: |
+      basic_auth_users:
+        {{prometheus_user}}: "$2a$12$8cLkgwJSSEweS2EFA2umNeZ5tFiZX7.No1uzVkR75jmHAmR/eMsrS"
+    dest: /opt/prometheus.web.yml
+    mode: "0674"
 
 - name: Create swarm service prometheus using traefik network
   when: inventory_hostname == swarm_leader
@@ -15,9 +25,20 @@
       - type: bind
         source: /opt/prometheus.yml
         target: /etc/prometheus/prometheus.yml
-    replicas: 2
+      - type: bind
+        source: /opt/prometheus.web.yml
+        target: /etc/prometheus/web.yml
+    replicas: 1
     networks:
       - "{{ traefik_network_name }}"
+    hosts:
+      prom.begoingto.test: "{{ ansible_host }}"
+    # command:
+    #   - "--config.file=/etc/prometheus/prometheus.yml"
+    #   - "--web.config.file=/etc/prometheus/web.yml"
+    #   - "--storage.tsdb.path=/prometheus"
+    #   - "--web.console.libraries=/etc/prometheus/console_libraries"
+    #   - "--web.console.templates=/etc/prometheus/consoles"
     labels:
       traefik.enable: "true"
       traefik.http.routers.prometheus.rule: "Host(`prom.begoingto.test`)"
