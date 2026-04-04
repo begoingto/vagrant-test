@@ -1,0 +1,34 @@
+- name: Create Traefik network
+  community.docker.docker_network:
+    name: traefik
+    driver: overlay
+    state: present
+
+- name: Upload traefik configuration file
+  ansible.builtin.template:
+    src: traefik.yml
+    dest: /opt/traefik.yml
+
+- name: Create Swarm services for Traefik
+  when: inventory_hostname == groups['managers'][0]
+  run_once: true
+  community.docker.docker_swarm_service:
+    name: traefik
+    image: traefik:v3.6.12
+    replicas: 2
+    mounts:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+      - type: bind
+        source: /opt/traefik.yml
+        target: /etc/traefik/traefik.yml
+    networks:
+      - traefik
+    publish:
+      - published_port: 80
+        target_port: 80
+      - published_port: 443
+        target_port: 443
+      - published_port: 8080
+        target_port: 8080

@@ -49,3 +49,6 @@
 
 - name: Include Docker Swarm role for manager nodes
   ansible.builtin.include_tasks: swarm_manager.yml
+
+- name: Include Traefik setup tasks
+  ansible.builtin.include_tasks: traefik.yml
