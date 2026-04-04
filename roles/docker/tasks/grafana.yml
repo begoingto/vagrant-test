@@ -9,6 +9,7 @@
       - "{{ traefik_network_name }}"
     hosts:
       prom.begoingto.test: "{{ ansible_host }}"
+      swarm-node2.begoingto.test: "{{ ansible_host }}"
     labels:
       traefik.enable: "true"
       traefik.http.routers.grafana.rule: "Host(`gra.begoingto.test`)"

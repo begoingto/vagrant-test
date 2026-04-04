@@ -51,7 +51,7 @@
       ansible.builtin.import_role:
         name: docker
         tasks_from: grafana.yml
-      tags: gra
+      tags: graf
 
     - name: Include role docker with task to create node exporter container
       ansible.builtin.import_role:
