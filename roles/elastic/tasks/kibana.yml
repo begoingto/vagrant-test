@@ -9,6 +9,39 @@
     update_cache: yes
     enablerepo: elasticsearch
 
+- name: Configure kibana.yml (small VM + cluster friendly)
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/kibana/kibana.yml
+    backup: true
+    content: |
+      server.host: "0.0.0.0"
+      server.port: 5601
+      # Enables you to specify a file where Kibana stores log output.
+      logging:
+        appenders:
+          file:
+            type: file
+            fileName: /var/log/kibana/kibana.log
+            layout:
+              type: json
+        root:
+          appenders:
+            - default
+            - file
+
+      pid.file: /run/kibana/kibana.pid
+      # Point to your Elasticsearch (use elasticsearch username/password if security is on)
+      elasticsearch.hosts: ["https://{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
+      # If you have reset the elastic password, add:
+      elasticsearch.username: "admin"
+      elasticsearch.password: "Admin@123"
+
+      # Reduce memory pressure
+      server.maxPayloadBytes: 1048576
+    mode: "0644"
+  notify: Restart Kibana
+
 - name: Enable and start Elastic Kibana service
   become: true
   ansible.builtin.systemd:
