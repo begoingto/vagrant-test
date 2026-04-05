@@ -1,0 +1,19 @@
+- name: include tasks for repository setup
+  ansible.builtin.include_tasks: repo.yml
+
+- name: Install Kibana
+  become: true
+  ansible.builtin.dnf:
+    name: kibana-{{ elasticsearch_version }}
+    state: present
+    update_cache: yes
+    enablerepo: elasticsearch
+
+- name: Enable and start Elastic Kibana service
+  become: true
+  ansible.builtin.systemd:
+    name: kibana
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  no_log: true

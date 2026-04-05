@@ -1,0 +1,16 @@
+- name: Import Elasticsearch GPG key
+  become: true
+  ansible.builtin.rpm_key:
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
+
+- name: Add Elasticsearch repository
+  become: true
+  ansible.builtin.yum_repository:
+    name: elasticsearch
+    description: Elasticsearch repository for 9.x packages
+    baseurl: https://artifacts.elastic.co/packages/9.x/yum
+    gpgcheck: yes
+    gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    enabled: no
+    state: present
