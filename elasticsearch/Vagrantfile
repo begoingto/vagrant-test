@@ -1,0 +1,20 @@
+Vagrant.configure("2") do |config|
+  (1..3).each do |i|
+    config.vm.define "elastic-node#{i}" do |node|
+			node.vm.hostname = "elastic-node#{i}"
+			node.vm.disk :disk, size: "20GB", primary: true
+      node.vm.box = "bento/amazonlinux-2023"
+      node.vm.box_version = "202510.26.0"
+      node.vm.network "private_network", ip: "192.168.56.#{20 + i}"
+      node.vm.provider "virtualbox" do |vb|
+        vb.memory = "4096"
+        vb.cpus = 2
+      end
+			node.vm.provision "shell", inline: <<-SHELL
+				#!/bin/bash
+				# write public key to authorized_keys
+				sudo echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCZKiBE3tCUflELc8c02KLeyQaQSXLPPS6kr+9Pjx4I+l17DNd8b+xZgRzoakizbhZVocSylDDLaiZXFpC7LnBszfH23odVaUu+5N/jBJ0xer2o8bolxuDleCpaGo/J1fA18U96xnRsRcdbW0Pz0X0ouU4nwE7txCa9OCkwJ2jl+nFJ6Kiknqof9Y3HtYAJbYu8oYQAuW15fKm6KwL/mKicG03GrtQxW2iSmVW6nTGMCs6at0OWtGvHOmrTE3aaMbSnBTMcZ7bTZNPGIpoyedTasxyQt7bK1kf1uJgFNB9BBaPUmRhhog7JqTWIgCskUdVzn0lYZ75RZtoqPX2hy4mj75Ps63bzvAIvdpWmbWTi+fJg15HJRjvtsHPPr5Xx2dHK6avsLiQpy4y0seHEb72upjvTYDk2H+so1roYAYLuHBB3DrDAMOwK/yQa3nH0xXY5nYXsiOFiHWP1pzCKuMAeFUgS43s7aBUn05cB14/rTQMm+luOHuL/Ov6qarR9VQ8= x@DESKTOP-9PK4EKQ" >> /home/ec2-user/.ssh/authorized_keys
+			SHELL
+    end
+  end
+end

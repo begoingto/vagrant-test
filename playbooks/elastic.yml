@@ -1,0 +1,9 @@
+---
+- name: Configure Elastic Stack ELK
+  hosts: elastic
+  become: false
+  gather_facts: false
+  tasks:
+    - name: Import task to create elastic network
+      ansible.builtin.import_role:
+        name: elastic

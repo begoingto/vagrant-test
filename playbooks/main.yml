@@ -35,7 +35,17 @@
 
 - name: Setup Docker
   hosts: swarm
+  gather_facts: false
   become: true
   roles:
     - docker
   tags: docker
+
+- name: Setup Elastic Stack ELK
+  hosts: elastic
+  become: true
+  gather_facts: false
+  strategy: free
+  roles:
+    - elastic
+  tags: elastic
