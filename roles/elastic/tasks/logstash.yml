@@ -1,0 +1,25 @@
+- name: Install java-21-amazon-corretto
+  become: true
+  ansible.builtin.dnf:
+    name: java-21-amazon-corretto
+    state: present
+    update_cache: yes
+
+- name: include tasks for repository setup
+  ansible.builtin.include_tasks: repo.yml
+
+- name: Install Logstash
+  become: true
+  ansible.builtin.dnf:
+    name: logstash-{{ elasticsearch_version }}
+    state: present
+    update_cache: yes
+    enablerepo: elasticsearch
+
+- name: Enable and start Elastic Logstash service
+  become: true
+  ansible.builtin.systemd:
+    name: logstash
+    enabled: yes
+    state: started
+    daemon_reload: yes

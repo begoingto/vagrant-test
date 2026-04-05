@@ -9,3 +9,15 @@
   ansible.builtin.systemd:
     name: kibana
     state: restarted
+
+- name: Restart Logstash
+  become: true
+  ansible.builtin.systemd:
+    name: logstash
+    state: restarted
+
+- name: Restart Filebeat
+  become: true
+  ansible.builtin.systemd:
+    name: filebeat
+    state: restarted

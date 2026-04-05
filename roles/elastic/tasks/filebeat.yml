@@ -1,0 +1,52 @@
+- name: include tasks for repository setup
+  ansible.builtin.include_tasks: repo.yml
+
+- name: Install Filebeat
+  become: true
+  ansible.builtin.dnf:
+    name: filebeat-{{ elasticsearch_version }}
+    state: present
+    update_cache: yes
+    enablerepo: elasticsearch
+
+- name: Configure filebeat.yml (small VM + cluster friendly)
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/filebeat/filebeat.yml
+    backup: true
+    content: |
+      filebeat.inputs:
+        - type: filestream
+          id: my-filestream-id
+          enabled: true
+          paths:
+            - /var/log/*.log
+      filebeat.config.modules:
+        path: ${path.config}/modules.d/*.yml
+        reload.enabled: false
+      setup.template.settings:
+        index.number_of_shards: 1
+      setup.kibana:
+        host: "localhost:5601"
+      output.elasticsearch:
+        hosts: ["{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
+        protocol: "https"
+        username: "filebeat_internal"
+        password: "Admin@123"
+        preset: balanced
+      processors:
+        - add_host_metadata:
+            when.not.contains.tags: forwarded
+        - add_cloud_metadata: ~
+        - add_docker_metadata: ~
+        - add_kubernetes_metadata: ~
+    mode: "0644"
+  notify: Restart Filebeat
+
+- name: Enable and start Filebeat service
+  become: true
+  ansible.builtin.systemd:
+    name: filebeat
+    enabled: yes
+    state: started
+    daemon_reload: yes

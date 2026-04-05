@@ -9,3 +9,15 @@
         name: elastic
         tasks_from: kibana.yml
       tags: kibana
+
+    - name: Import task to create elastic logstash
+      ansible.builtin.import_role:
+        name: elastic
+        tasks_from: logstash.yml
+      tags: logstash
+
+    - name: Import task to create elastic filebeat
+      ansible.builtin.import_role:
+        name: elastic
+        tasks_from: filebeat.yml
+      tags: filebeat
