@@ -30,9 +30,9 @@
         reload.enabled: false
       setup.template.settings:
         index.number_of_shards: 1
-      setup.dashboards.enabled: true
-      setup.kibana:
-        host: "localhost:5601"
+      # setup.dashboards.enabled: true
+      # setup.kibana:
+      #   host: "localhost:5601"
       output.elasticsearch:
         hosts: ["{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
         protocol: "https"
