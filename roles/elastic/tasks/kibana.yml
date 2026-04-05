@@ -43,7 +43,7 @@
       elasticsearch.hosts: ["https://{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
       elasticsearch.ssl.certificateAuthorities: ["/etc/kibana/certs/elastic-stack-ca.pem"]
       elasticsearch.ssl.verificationMode: certificate
-      elasticsearch.username: "admin"
+      elasticsearch.username: "kibana_system"
       elasticsearch.password: "Admin@123"
 
       # Reduce memory pressure
