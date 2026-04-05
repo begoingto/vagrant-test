@@ -17,6 +17,14 @@
     content: |
       server.host: "0.0.0.0"
       server.port: 5601
+
+      server.ssl.enabled: true
+      server.ssl.keystore.path: "/etc/kibana/certs/kibana-server.p12"
+      server.ssl.keystore.password: ""
+
+      # xpack.encryptedSavedObjects.encryptionKey: b6747239038cda5d3b27f57455503727b15fd38039b8440584bec469628feece
+      # xpack.reporting.encryptionKey: 4a26a3037debbf61f2bffd8aae956099c5ab2c5c49eb0fd97260b6036931d99a
+      # xpack.security.encryptionKey: 2d6c3820ef2e805a0c6e5d8c1544a9be76ac1ed669a8961ca5229b428cc3fe1f
       # Enables you to specify a file where Kibana stores log output.
       logging:
         appenders:
@@ -33,12 +41,13 @@
       pid.file: /run/kibana/kibana.pid
       # Point to your Elasticsearch (use elasticsearch username/password if security is on)
       elasticsearch.hosts: ["https://{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
-      # If you have reset the elastic password, add:
+      elasticsearch.ssl.certificateAuthorities: ["/etc/kibana/certs/elastic-stack-ca.pem"]
+      elasticsearch.ssl.verificationMode: certificate
       elasticsearch.username: "admin"
       elasticsearch.password: "Admin@123"
 
       # Reduce memory pressure
-      server.maxPayloadBytes: 1048576
+      server.maxPayload: 1048576
     mode: "0644"
   notify: Restart Kibana
 
