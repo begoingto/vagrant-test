@@ -1,6 +1,7 @@
 - name: Import Elasticsearch GPG key
-  ansible.builtin.command: rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
-  changed_when: true
+  ansible.builtin.rpm_key:
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    state: present
 
 - name: Add Elasticsearch repository
   ansible.builtin.yum_repository:
@@ -18,3 +19,90 @@
     state: present
     update_cache: yes
     enablerepo: elasticsearch
+
+- name: Set JVM heap size to {{ heap_size }} (safe for 4GB RAM)
+  ansible.builtin.blockinfile:
+    path: /etc/elasticsearch/jvm.options.d/heap.options
+    create: yes
+    content: |
+      -Xms{{ heap_size }}
+      -Xmx{{ heap_size }}
+    mode: "0644"
+  notify: Restart Elasticsearch
+
+- name: Configure Elasticsearch (elasticsearch.yml) - First Node
+  ansible.builtin.copy:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    backup: true
+    content: |
+      # ======================== Elasticsearch Configuration =========================
+      cluster.name: "{{ cluster_name }}"
+      node.name: "{{ inventory_hostname }}"
+      node.roles: ["master", "data", "ingest"]
+
+      path.data: /var/lib/elasticsearch
+      path.logs: /var/log/elasticsearch
+
+      network.host: 0.0.0.0
+      transport.host: 0.0.0.0
+      http.port: 9200
+      transport.port: 9300
+
+      # Enable security features
+      xpack.security.enabled: true
+      xpack.security.enrollment.enabled: true
+
+      # Enable encryption for HTTP API client connections, such as Kibana, Logstash, and Agents
+      xpack.security.http.ssl:
+        enabled: true
+        keystore.path: certs/http.p12
+
+
+      # Enable encryption and mutual authentication between cluster nodes
+      xpack.security.transport.ssl:
+        enabled: true
+        verification_mode: certificate
+        keystore.path: certs/transport.p12
+        truststore.path: certs/transport.p12
+
+      discovery.seed_hosts:
+        - "{{ hostvars['elastic-node1']['ansible_host'] }}:9300"
+        - "{{ hostvars['elastic-node2']['ansible_host'] }}:9300"
+        - "{{ hostvars['elastic-node3']['ansible_host'] }}:9300"
+
+      # Bootstrap setting - only needed for initial cluster formation
+      cluster.initial_master_nodes:
+        - "{{ inventory_hostname }}"
+
+      bootstrap.memory_lock: false
+
+      # Light tuning for small VM
+      thread_pool.write.size: 2
+      thread_pool.search.size: 2
+    mode: "0644"
+  notify: Restart Elasticsearch
+
+- name: Increase vm.max_map_count
+  ansible.builtin.sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+    reload: yes
+
+- name: Set system limits for Elasticsearch
+  ansible.builtin.copy:
+    dest: /etc/security/limits.d/elasticsearch.conf
+    content: |
+      elasticsearch soft nofile 65536
+      elasticsearch hard nofile 65536
+      elasticsearch soft memlock unlimited
+      elasticsearch hard memlock unlimited
+    mode: "0644"
+
+- name: Enable and start Elasticsearch service
+  ansible.builtin.systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  no_log: false

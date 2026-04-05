@@ -1,1 +1,3 @@
 elasticsearch_version: "9.3.2"
+cluster_name: "elastic-dev"
+heap_size: "1g"
