@@ -1,0 +1,16 @@
+Vagrant.configure("2") do |config|
+  config.vm.hostname = "nexus-node"
+  config.vm.box = "bento/ubuntu-24.04"
+  config.vm.box_version = "202510.26.0"
+	config.vm.disk :disk, size: "20GB", primary: true
+  config.vm.network "private_network", ip: "192.168.56.30"
+	config.vm.provider "virtualbox" do |vb|
+		vb.memory = "8192"
+		vb.cpus = 4
+	end
+	config.vm.provision "shell", inline: <<-SHELL
+				#!/bin/bash
+				# write public key to authorized_keys
+				sudo echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCZKiBE3tCUflELc8c02KLeyQaQSXLPPS6kr+9Pjx4I+l17DNd8b+xZgRzoakizbhZVocSylDDLaiZXFpC7LnBszfH23odVaUu+5N/jBJ0xer2o8bolxuDleCpaGo/J1fA18U96xnRsRcdbW0Pz0X0ouU4nwE7txCa9OCkwJ2jl+nFJ6Kiknqof9Y3HtYAJbYu8oYQAuW15fKm6KwL/mKicG03GrtQxW2iSmVW6nTGMCs6at0OWtGvHOmrTE3aaMbSnBTMcZ7bTZNPGIpoyedTasxyQt7bK1kf1uJgFNB9BBaPUmRhhog7JqTWIgCskUdVzn0lYZ75RZtoqPX2hy4mj75Ps63bzvAIvdpWmbWTi+fJg15HJRjvtsHPPr5Xx2dHK6avsLiQpy4y0seHEb72upjvTYDk2H+so1roYAYLuHBB3DrDAMOwK/yQa3nH0xXY5nYXsiOFiHWP1pzCKuMAeFUgS43s7aBUn05cB14/rTQMm+luOHuL/Ov6qarR9VQ8= x@DESKTOP-9PK4EKQ" >> /home/vagrant/.ssh/authorized_keys
+			SHELL
+end

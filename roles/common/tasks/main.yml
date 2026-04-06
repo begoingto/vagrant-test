@@ -12,6 +12,15 @@
     update_cache: yes
     cache_valid_time: 3600
 
+- name: Upgradable packages
+  when: ansible_facts.os_family == "Debian" and upgradable is defined
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: yes # This is equivalent to "apt upgrade"
+    autoremove: yes # Optional: removes unused dependencies (like apt autoremove)
+    autoclean: yes # Optional: cleans the local repository
+    cache_valid_time: 3600 # Optional: only run update_cache if older than 1 hour
+
 - name: Update yum cache
   when: ansible_facts.os_family == "RedHat"
   ansible.builtin.dnf:
