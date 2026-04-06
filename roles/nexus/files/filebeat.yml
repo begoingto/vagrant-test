@@ -1,0 +1,20 @@
+filebeat.inputs:
+  - type: filestream
+    id: nexus-logs
+    enabled: true
+    paths:
+      - /opt/sonatype-work/nexus3/log/*.log
+      - /opt/sonatype-work/nexus3/log/*/*.log
+    fields:
+      app: nexus3
+      env: production
+    fields_under_root: true
+    ignore_older: 72h
+    scan_frequency: 10s
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+
+output.logstash:
+  hosts: ["192.168.56.24:5044"]

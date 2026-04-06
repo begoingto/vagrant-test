@@ -33,8 +33,10 @@
           user => "admin"
           password => "Admin@123"
           ssl => true
-          cacert => "/etc/logstash/certs/elastic-stack-ca.pem"
+          ssl_certificate_authorities => "/etc/logstash/certs/elastic-stack-ca.pem"
         }
+
+        stdout { codec => rubydebug }
       }
     mode: "0644"
   notify: Restart Logstash
