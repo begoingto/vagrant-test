@@ -23,8 +23,6 @@
             - /var/log/kibana/kibana.log
           fields:
             service: kibana
-        - type: journald
-          id: everything
       filebeat.config.modules:
         path: ${path.config}/modules.d/*.yml
         reload.enabled: false
@@ -33,6 +31,8 @@
       # setup.dashboards.enabled: true
       # setup.kibana:
       #   host: "localhost:5601"
+      # output.logstash:
+      #   hosts: ["localhost:5044"]
       output.elasticsearch:
         hosts: ["{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
         protocol: "https"

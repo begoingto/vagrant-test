@@ -16,6 +16,29 @@
     update_cache: yes
     enablerepo: elasticsearch
 
+- name: Create Logstash configuration with filebeat input and elasticsearch output
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/filebeat/filebeat.yml
+    backup: true
+    content: |
+      input {
+        beats {
+          port => 5044
+        }
+      }
+      output {
+        elasticsearch {
+          hosts => ["{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
+          user => "admin"
+          password => "Admin@123"
+          ssl => true
+          cacert => "/etc/logstash/certs/elastic-stack-ca.pem"
+        }
+      }
+    mode: "0644"
+  notify: Restart Logstash
+
 - name: Enable and start Elastic Logstash service
   become: true
   ansible.builtin.systemd:
