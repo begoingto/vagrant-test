@@ -49,3 +49,10 @@
   roles:
     - elastic
   tags: elastic
+
+- name: Setup Nexus Repository Manager
+  hosts: nexus
+  become: true
+  roles:
+    - nexus
+  tags: nexus

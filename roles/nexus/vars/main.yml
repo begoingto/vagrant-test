@@ -1,0 +1,5 @@
+nexus_user: "nexus"
+nexus_group: "nexus"
+nexus_install_dir: "/opt/nexus"
+nexus_data_dir: "/var/nexus"
+nexus_port: 8081

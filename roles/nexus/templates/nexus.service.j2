@@ -1,0 +1,21 @@
+[Unit]
+Description=Sonatype Nexus Repository "{{ nexus_version }}"
+After=network.target
+
+[Service]
+Type=forking
+User={{ nexus_user }}
+Group={{ nexus_group }}
+Environment=JAVA_HOME={{ java_home_path.stdout | default('/usr/lib/jvm/java-21-openjdk-amd64') }}
+Environment=PATH={{ java_home_path.stdout | default('/usr/lib/jvm/java-21-openjdk-amd64') }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart={{ nexus_install_dir }}/bin/nexus start
+ExecStop={{ nexus_install_dir }}/bin/nexus stop
+LimitNOFILE=65536
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=10s
+
+StandardOutput=journal
+StandardError=journal
+[Install]
+WantedBy=multi-user.target
