@@ -31,3 +31,33 @@
     state: started
     enabled: yes
   no_log: true
+
+- name: Fetch the config file
+  when: false
+  ansible.builtin.fetch:
+    src: /var/lib/pgsql/data/postgresql.conf
+    dest: "{{ role_path }}/files/postgresql.conf"
+    flat: yes
+
+- name: template replace postgresql.conf
+  ansible.builtin.template:
+    src: postgresql.conf.j2
+    dest: /var/lib/pgsql/data/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: "0600"
+    backup: yes
+  notify: Restart PostgreSQL
+
+- name: include role elastic for repository setup
+  ansible.builtin.include_role:
+    name: elastic
+    tasks_from: repo
+
+- name: Install Elastic-agent
+  become: true
+  ansible.builtin.dnf:
+    name: elastic-agent-{{ elasticsearch_version }}
+    state: present
+    update_cache: yes
+    enablerepo: elasticsearch

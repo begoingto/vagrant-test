@@ -56,3 +56,10 @@
   roles:
     - nexus
   tags: nexus
+
+- name: Setup PostgreSQL
+  hosts: pgsql_vm
+  become: true
+  roles:
+    - pgsql
+  tags: pgsql
