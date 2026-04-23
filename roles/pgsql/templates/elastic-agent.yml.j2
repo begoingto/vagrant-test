@@ -1,0 +1,30 @@
+outputs:
+  default:
+    type: elasticsearch
+    hosts: [ "https://192.168.56.21:9200" ]
+    username: "kibana_system"
+    password: "Admin@123"
+    ssl:
+      certificate_authorities: [ "/etc/elastic-agent/certs/elastic-stack-ca.pem" ]
+      verification_mode: "certificate"
+
+inputs:
+  - name: postgresql-metrics
+    type: postgresql/metrics
+    use_output: default
+    streams:
+      - metricsets:
+          - database
+          - bgwriter
+          - activity
+        hosts: [ "postgres://pgwatch:123@127.0.0.1:5432/postgres?sslmode=disable" ]
+        period: 10s
+
+  - name: postgresql-logs
+    type: postgresql/log
+    use_output: default
+    streams:
+      - paths:
+          - /var/lib/pgsql/data/log/*.csv
+        exclude_files: [ ".gz$" ]
+        tags: [ "postgresql-csv" ]

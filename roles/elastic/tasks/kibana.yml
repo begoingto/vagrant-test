@@ -22,6 +22,9 @@
       server.ssl.keystore.path: "/etc/kibana/certs/kibana-server.p12"
       server.ssl.keystore.password: ""
 
+      xpack.fleet.agents.fleet_server.hosts: ["https://{{ ansible_host }}:8220"]
+      xpack.fleet.agents.elasticsearch.hosts: ["https://{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
+      xpack.fleet.agents.elasticsearch.ca_sha256: "DDB6A28BC94E5BCD8A7335F8050980D256D2C68207707866C53CE50ADED65EBF"
       xpack.encryptedSavedObjects.encryptionKey: "3moeGFebT61dZsn5xFSWmsv9YamejErKs3fajAf9V+U="
       xpack.reporting.encryptionKey: "1dhvmHnF6EtddsRAiRNNn+CuE+RvjtSE9/UFiYT/qzc="
       xpack.security.encryptionKey: "LGeMRFwikIb/RoDeYC1s7GOa4s0vKePW02AUYSHGwiU="
