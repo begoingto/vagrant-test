@@ -18,14 +18,17 @@ xpack.security.enrollment.enabled: true
 # Enable encryption for HTTP API client connections, such as Kibana, Logstash, and Agents
 xpack.security.http.ssl:
   enabled: true
-  keystore.path: certs/http.p12
+  keystore.path: ssl/{{ ssl_filename }}.p12
+  keystore.password: "{{ ca_key_pass }}"
 
 # Enable encryption and mutual authentication between cluster nodes
 xpack.security.transport.ssl:
   enabled: true
   verification_mode: certificate
-  keystore.path: certs/transport.p12
-  truststore.path: certs/transport.p12
+  keystore.path: ssl/{{ ssl_filename }}.p12
+  keystore.password: "{{ ca_key_pass }}"
+  truststore.path: ssl/{{ ssl_filename }}.p12
+  truststore.password: "{{ ca_key_pass }}"
 
 discovery.seed_hosts:
   - "{{ hostvars['elk1']['ansible_host'] }}:9300"

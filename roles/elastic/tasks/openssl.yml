@@ -56,8 +56,8 @@
     privatekey_path: "{{ ssl_dir }}/{{ ssl_filename }}.key"
     certificate_path: "{{ ssl_dir }}/{{ ssl_filename }}.crt"
     passphrase: "{{ ca_key_pass }}"
-    mode: "0600"
-    force: false
+    mode: "0644"
+    force: "{{ force_ca | bool }}"
     owner: root
     group: elasticsearch
 
