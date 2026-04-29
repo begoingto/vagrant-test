@@ -1,0 +1,68 @@
+- name: Create SSL directory if it doesn't exist
+  ansible.builtin.file:
+    path: "{{ ssl_dir }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: elasticsearch
+
+- name: Generate 4096-bit RSA private key
+  community.crypto.openssl_privatekey:
+    path: "{{ ssl_dir }}/{{ ssl_filename }}.key"
+    size: 4096
+    type: RSA
+    mode: "0600"
+    owner: root
+    group: elasticsearch
+
+- name: Generate CSR with exact subject and SAN (IP only)
+  community.crypto.openssl_csr:
+    path: "{{ ssl_dir }}/{{ ssl_filename }}.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ ssl_filename }}.key"
+    digest: sha256
+    subject:
+      countryName: "DE"
+      stateOrProvinceName: "NRW"
+      localityName: "Cologne"
+      organizationName: "My Company"
+      organizationalUnitName: "IT"
+      commonName: "{{ ansible_host }}"
+    subject_alt_name:
+      - "DNS:localhost"
+      - "IP:127.0.0.1"
+      - "IP:{{ server_ip if server_ip is defined else ansible_host }}"
+    mode: "0644"
+    owner: root
+    group: elasticsearch
+
+- name: Sign CSR with your own CA → create the final certificate
+  community.crypto.x509_certificate:
+    path: "{{ ssl_dir }}/{{ ssl_filename }}.crt"
+    privatekey_path: "{{ ssl_dir }}/{{ ssl_filename }}.key"
+    csr_path: "{{ ssl_dir }}/{{ ssl_filename }}.csr"
+    provider: selfsigned
+    selfsigned_digest: sha256
+    selfsigned_not_before: "+0s"
+    selfsigned_not_after: "+365d"
+    mode: "0644"
+    force: "{{ force_ca | bool }}"
+    owner: root
+    group: elasticsearch
+
+- name: Generate PKCS#12 file
+  community.crypto.openssl_pkcs12:
+    friendly_name: "Elastic SSL Certificate"
+    path: "{{ ssl_dir }}/{{ ssl_filename }}.p12"
+    privatekey_path: "{{ ssl_dir }}/{{ ssl_filename }}.key"
+    certificate_path: "{{ ssl_dir }}/{{ ssl_filename }}.crt"
+    passphrase: "{{ ca_key_pass }}"
+    mode: "0600"
+    force: false
+    owner: root
+    group: elasticsearch
+
+- name: Fetch {{ ssl_filename }}.crt to local
+  ansible.builtin.fetch:
+    src: "{{ ssl_dir }}/{{ ssl_filename }}.crt"
+    dest: "{{ role_path }}/files/"
+    flat: yes

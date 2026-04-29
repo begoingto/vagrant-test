@@ -18,55 +18,13 @@
     mode: "0644"
   notify: Restart Elasticsearch
 
+- name: include tasks for SSL certificate generation
+  ansible.builtin.include_tasks: openssl.yml
+
 - name: Configure Elasticsearch (elasticsearch.yml) - First Node
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: elasticsearch.yml.j2
     dest: /etc/elasticsearch/elasticsearch.yml
-    backup: true
-    content: |
-      # ======================== Elasticsearch Configuration =========================
-      cluster.name: "{{ cluster_name }}"
-      node.name: "{{ inventory_hostname }}"
-      node.roles: ["master", "data", "ingest"]
-
-      path.data: /var/lib/elasticsearch
-      path.logs: /var/log/elasticsearch
-
-      network.host: 0.0.0.0
-      transport.host: 0.0.0.0
-      http.port: 9200
-      transport.port: 9300
-
-      # Enable security features
-      xpack.security.enabled: true
-      xpack.security.enrollment.enabled: true
-
-      # Enable encryption for HTTP API client connections, such as Kibana, Logstash, and Agents
-      xpack.security.http.ssl:
-        enabled: true
-        keystore.path: certs/http.p12
-
-
-      # Enable encryption and mutual authentication between cluster nodes
-      xpack.security.transport.ssl:
-        enabled: true
-        verification_mode: certificate
-        keystore.path: certs/transport.p12
-        truststore.path: certs/transport.p12
-
-      discovery.seed_hosts:
-        - "{{ hostvars['elastic-node1']['ansible_host'] }}:9300"
-        - "{{ hostvars['elastic-node2']['ansible_host'] }}:9300"
-        - "{{ hostvars['elastic-node3']['ansible_host'] }}:9300"
-
-      # Bootstrap setting - only needed for initial cluster formation
-      cluster.initial_master_nodes:
-        - "{{ inventory_hostname }}"
-
-      bootstrap.memory_lock: false
-
-      # Light tuning for small VM
-      thread_pool.write.size: 2
-      thread_pool.search.size: 2
     mode: "0644"
   notify: Restart Elasticsearch
 

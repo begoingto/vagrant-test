@@ -45,7 +45,6 @@
   hosts: elastic
   become: true
   gather_facts: false
-  # strategy: free
   roles:
     - elastic
   tags: elastic
