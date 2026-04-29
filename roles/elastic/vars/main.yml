@@ -7,6 +7,10 @@ elastic_user_pass: "Admin@123"
 
 ssl_dir: "/etc/elasticsearch/ssl"
 ssl_filename: "elasticsearch"
-keystore_pass: "changeit"
+
 ca_key_pass: "changeit"
 force_ca: false
+
+kibana_certs_dir: "/etc/kibana/certs"
+kibana_ssl_dir: "/etc/kibana/ssl"
+kibana_ssl_filename: "kibana"

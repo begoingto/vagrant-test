@@ -2,56 +2,35 @@
   ansible.builtin.include_tasks: repo.yml
 
 - name: Install Kibana
-  become: true
   ansible.builtin.dnf:
     name: kibana-{{ elasticsearch_version }}
     state: present
     update_cache: yes
     enablerepo: elasticsearch
 
-- name: Configure kibana.yml (small VM + cluster friendly)
-  become: true
+- name: Create SSL directory
+  ansible.builtin.file:
+    path: "{{ kibana_certs_dir }}"
+    state: directory
+    mode: "0750"
+    owner: root
+    group: kibana
+
+- name: Copy elasticsearch CA certificate to Kibana
   ansible.builtin.copy:
+    src: "{{ role_path }}/files/elasticsearch.crt"
+    dest: "{{ kibana_certs_dir  }}/elasticsearch.pem"
+    owner: root
+    group: kibana
+    mode: "0750"
+
+- name: include tasks for Kibana SSL certificate generation
+  ansible.builtin.include_tasks: kibana-openssl.yml
+
+- name: Configure kibana.yml
+  ansible.builtin.template:
+    src: kibana.yml.j2
     dest: /etc/kibana/kibana.yml
-    backup: true
-    content: |
-      server.host: "0.0.0.0"
-      server.port: 5601
-
-      server.ssl.enabled: true
-      server.ssl.keystore.path: "/etc/kibana/certs/kibana-server.p12"
-      server.ssl.keystore.password: ""
-
-      xpack.fleet.agents.fleet_server.hosts: ["https://{{ ansible_host }}:8220"]
-      xpack.fleet.agents.elasticsearch.hosts: ["https://{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
-      xpack.fleet.agents.elasticsearch.ca_sha256: "DDB6A28BC94E5BCD8A7335F8050980D256D2C68207707866C53CE50ADED65EBF"
-      xpack.encryptedSavedObjects.encryptionKey: "3moeGFebT61dZsn5xFSWmsv9YamejErKs3fajAf9V+U="
-      xpack.reporting.encryptionKey: "1dhvmHnF6EtddsRAiRNNn+CuE+RvjtSE9/UFiYT/qzc="
-      xpack.security.encryptionKey: "LGeMRFwikIb/RoDeYC1s7GOa4s0vKePW02AUYSHGwiU="
-      # Enables you to specify a file where Kibana stores log output.
-      logging:
-        appenders:
-          file:
-            type: file
-            fileName: /var/log/kibana/kibana.log
-            layout:
-              type: json
-        root:
-          appenders:
-            - default
-            - file
-
-      pid.file: /run/kibana/kibana.pid
-      # Point to your Elasticsearch (use elasticsearch username/password if security is on)
-      elasticsearch.hosts: ["https://{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
-      elasticsearch.ssl.certificateAuthorities: ["/etc/kibana/certs/elastic-stack-ca.pem"]
-      elasticsearch.ssl.verificationMode: certificate
-      elasticsearch.username: "kibana_system"
-      elasticsearch.password: "Admin@123"
-
-      # Reduce memory pressure
-      server.maxPayload: 1048576
-    mode: "0644"
   notify: Restart Kibana
 
 - name: Enable and start Elastic Kibana service
@@ -62,3 +41,12 @@
     state: started
     daemon_reload: yes
   no_log: true
+
+- name: Wait for Elasticsearch to be up
+  ansible.builtin.wait_for:
+    host: "{{ ansible_host }}"
+    port: 5601
+    delay: 10
+    timeout: 300
+  register: wait_result
+  until: wait_result is success

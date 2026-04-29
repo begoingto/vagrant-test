@@ -67,10 +67,3 @@
     timeout: 300
   register: wait_result
   until: wait_result is success
-
-# - name: Create Elasticsearch user for API access
-#   when: wait_result is success
-#   ansible.builtin.shell: |
-#     echo "Admin123" | /usr/share/elasticsearch/bin/elasticsearch-users useradd admin -p - -r superuser
-#   become: true
-#   no_log: false

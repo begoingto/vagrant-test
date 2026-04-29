@@ -1,0 +1,33 @@
+server.host: "0.0.0.0"
+server.port: 5601
+
+server.ssl.enabled: true
+server.ssl.keystore.path: "{{ kibana_ssl_dir }}/{{ kibana_ssl_filename }}.p12"
+server.ssl.keystore.password: "{{ ca_key_pass }}"
+
+xpack.fleet.agents.fleet_server.hosts: [ "https://{{ ansible_host }}:8220" ]
+xpack.fleet.agents.elasticsearch.hosts: [ "https://{{ hostvars['elk1']['ansible_host'] }}:9200" ]
+xpack.fleet.agents.elasticsearch.ca_sha256: "DDB6A28BC94E5BCD8A7335F8050980D256D2C68207707866C53CE50ADED65EBF"
+xpack.encryptedSavedObjects.encryptionKey: "3moeGFebT61dZsn5xFSWmsv9YamejErKs3fajAf9V+U="
+xpack.reporting.encryptionKey: "1dhvmHnF6EtddsRAiRNNn+CuE+RvjtSE9/UFiYT/qzc="
+xpack.security.encryptionKey: "LGeMRFwikIb/RoDeYC1s7GOa4s0vKePW02AUYSHGwiU="
+logging:
+  appenders:
+    file:
+      type: file
+      fileName: /var/log/kibana/kibana.log
+      layout:
+        type: json
+  root:
+    appenders:
+      - default
+      - file
+
+pid.file: /run/kibana/kibana.pid
+elasticsearch.hosts: [ "https://{{ hostvars['elk1']['ansible_host'] }}:9200" ]
+elasticsearch.ssl.certificateAuthorities: [ "{{ kibana_certs_dir }}/{{ ssl_filename }}.pem" ]
+elasticsearch.ssl.verificationMode: certificate
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "Admin@123"
+# Reduce memory pressure
+server.maxPayload: 1048576
