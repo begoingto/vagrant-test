@@ -21,16 +21,17 @@
     privatekey_path: "{{ ssl_dir }}/{{ ssl_filename }}.key"
     digest: sha256
     subject:
-      countryName: "DE"
-      stateOrProvinceName: "NRW"
-      localityName: "Cologne"
-      organizationName: "My Company"
+      countryName: "KH"
+      stateOrProvinceName: "PP"
+      localityName: "Phnom Penh"
+      organizationName: "BEGOINGTO Technology Co., Ltd."
       organizationalUnitName: "IT"
       commonName: "{{ ansible_host }}"
     subject_alt_name:
       - "DNS:localhost"
       - "IP:127.0.0.1"
-      - "IP:{{ server_ip if server_ip is defined else ansible_host }}"
+      - "IP:{{ ansible_facts['default_ipv4']['address'] }}"
+      - "IP:{{ ansible_host }}"
     mode: "0644"
     owner: root
     group: elasticsearch
@@ -60,6 +61,7 @@
     force: "{{ force_ca | bool }}"
     owner: root
     group: elasticsearch
+  register: result_pkcs12
 
 - name: Fetch {{ ssl_filename }}.crt to local
   ansible.builtin.fetch:

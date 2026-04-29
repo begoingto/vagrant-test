@@ -44,7 +44,7 @@
 - name: Setup Elastic Stack ELK
   hosts: elastic
   become: true
-  gather_facts: false
+  gather_facts: true
   roles:
     - elastic
   tags: elastic

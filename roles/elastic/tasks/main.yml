@@ -21,6 +21,12 @@
 - name: include tasks for SSL certificate generation
   ansible.builtin.include_tasks: openssl.yml
 
+- name: Add HTTP keystore password to Elasticsearch keystore
+  when: result_pkcs12.changed
+  ansible.builtin.shell: |
+    echo "{{ ca_key_pass }}" | /usr/share/elasticsearch/bin/elasticsearch-keystore add -x -f 'xpack.security.http.ssl.keystore.secure_password'
+  no_log: true
+
 - name: Configure Elasticsearch (elasticsearch.yml) - First Node
   ansible.builtin.template:
     src: elasticsearch.yml.j2
@@ -51,4 +57,20 @@
     enabled: yes
     state: started
     daemon_reload: yes
-  no_log: false
+  no_log: true
+
+- name: Wait for Elasticsearch to be up
+  ansible.builtin.wait_for:
+    host: "{{ ansible_host }}"
+    port: 9200
+    delay: 10
+    timeout: 300
+  register: wait_result
+  until: wait_result is success
+
+# - name: Create Elasticsearch user for API access
+#   when: wait_result is success
+#   ansible.builtin.shell: |
+#     echo "Admin123" | /usr/share/elasticsearch/bin/elasticsearch-users useradd admin -p - -r superuser
+#   become: true
+#   no_log: false

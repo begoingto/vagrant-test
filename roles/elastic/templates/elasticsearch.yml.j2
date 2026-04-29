@@ -19,16 +19,13 @@ xpack.security.enrollment.enabled: true
 xpack.security.http.ssl:
   enabled: true
   keystore.path: ssl/{{ ssl_filename }}.p12
-  keystore.password: "{{ ca_key_pass }}"
 
 # Enable encryption and mutual authentication between cluster nodes
 xpack.security.transport.ssl:
   enabled: true
   verification_mode: certificate
-  keystore.path: ssl/{{ ssl_filename }}.p12
-  keystore.password: "{{ ca_key_pass }}"
-  truststore.path: ssl/{{ ssl_filename }}.p12
-  truststore.password: "{{ ca_key_pass }}"
+  keystore.path: certs/transport.p12
+  truststore.path: certs/transport.p12
 
 discovery.seed_hosts:
   - "{{ hostvars['elk1']['ansible_host'] }}:9300"
