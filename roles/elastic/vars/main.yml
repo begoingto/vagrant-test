@@ -2,6 +2,9 @@ elasticsearch_version: "9.3.2"
 cluster_name: "elastic-dev"
 heap_size: "1g"
 
+elastic_user: "elastic"
+elastic_user_pass: "Admin@123"
+
 ssl_dir: "/etc/elasticsearch/ssl"
 ssl_filename: "elasticsearch"
 keystore_pass: "changeit"
