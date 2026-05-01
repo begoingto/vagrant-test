@@ -57,7 +57,7 @@
   tags: nexus
 
 - name: Setup PostgreSQL
-  hosts: pgsql_vm
+  hosts: pgsql
   become: true
   roles:
     - pgsql

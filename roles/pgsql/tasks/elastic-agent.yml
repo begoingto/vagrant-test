@@ -1,0 +1,41 @@
+- name: include role elastic for repository setup
+  ansible.builtin.include_role:
+    name: elastic
+    tasks_from: repo
+
+- name: Install Elastic-agent
+  become: true
+  ansible.builtin.dnf:
+    name: elastic-agent-9.3.2
+    state: present
+    update_cache: yes
+    enablerepo: elasticsearch
+
+- name: Fetch the elastic-agent.yml file
+  when: false
+  ansible.builtin.fetch:
+    src: /etc/elastic-agent/elastic-agent.yml
+    dest: "{{ role_path }}/files/elastic-agent.yml"
+    flat: yes
+
+- name: Create directory for elastic-agent certs
+  ansible.builtin.file:
+    path: /etc/elastic-agent/certs
+    state: directory
+
+- name: Copy pem from file to the host
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/elastic-stack-ca.pem"
+    dest: /etc/elastic-agent/certs/elastic-stack-ca.pem
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy elastic-agent.yml from template
+  ansible.builtin.template:
+    src: elastic-agent.yml.j2
+    dest: /etc/elastic-agent/elastic-agent.yml
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Elastic-agent
