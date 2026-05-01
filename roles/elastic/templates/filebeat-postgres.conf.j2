@@ -1,9 +1,31 @@
 input {
   beats {
-    port => "5044"
+    port => 5044
+  }
+}
+
+filter {
+  csv {
+    separator => ","
+    skip_header => true
+    columns => ["time","user","database","pid","level","message"]
+  }
+
+  date {
+    match => ["time", "ISO8601"]
+    target => "@timestamp"
   }
 }
 
 output {
+  elasticsearch {
+    hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
+    data_stream => "true"
+    data_stream_type => "logs"
+    data_stream_dataset => "postgresql"
+    data_stream_namespace => "production"
+    user => "elastic"
+    password => "Admin@123"
+  }
   stdout { codec => rubydebug }
 }

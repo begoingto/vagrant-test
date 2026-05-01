@@ -2,7 +2,7 @@
 - name: Configure Elastic Stack ELK
   hosts: elastic
   become: true
-  gather_facts: true
+  gather_facts: false
   tasks:
     - name: Import task to create elastic kibana
       ansible.builtin.import_role:
@@ -15,6 +15,12 @@
         name: elastic
         tasks_from: logstash.yml
       tags: logstash
+
+    - name: Import task to create elastic logstash
+      ansible.builtin.import_role:
+        name: elastic
+        tasks_from: config-logstash.yml
+      tags: lconfig
 
     - name: Import task to create elastic filebeat
       ansible.builtin.import_role:
