@@ -68,3 +68,16 @@
     src: "{{ ssl_dir }}/{{ ssl_filename }}.crt"
     dest: "{{ role_path }}/files/"
     flat: yes
+
+- name: Cert CRT and KEY to PEM file
+  ansible.builtin.shell: |
+    cat {{ ssl_filename }}.crt {{ ssl_filename }}.key > full_{{ ssl_filename }}.pem
+  args:
+    chdir: "{{ ssl_dir }}"
+    creates: "{{ ssl_dir }}/full_{{ ssl_filename }}.pem"
+
+- name: Fetch full PEM file to local
+  ansible.builtin.fetch:
+    src: "{{ ssl_dir }}/full_{{ ssl_filename }}.pem"
+    dest: "{{ role_path }}/files/"
+    flat: yes

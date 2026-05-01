@@ -1,0 +1,15 @@
+path.data: /var/lib/logstash
+path.logs: /var/log/logstash
+
+api.enabled: true
+api.http.host: 0.0.0.0
+api.http.port: 9600
+# api.environment: "production"
+api.ssl.enabled: true
+api.ssl.keystore.path: {{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.jks
+api.ssl.keystore.password: "{{ keystore_pass }}"
+api.ssl.supported_protocols: [TLSv1.2,TLSv1.3]
+api.auth.type: basic
+api.auth.basic.username: "logstash_user"
+api.auth.basic.password: "s3cUreP4$$w0rD"
+api.auth.basic.password_policy.mode: ERROR

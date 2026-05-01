@@ -1,0 +1,70 @@
+- name: Create SSL directory
+  ansible.builtin.file:
+    path: "{{ logstash_ssl_dir }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Generate 4096-bit RSA private key
+  community.crypto.openssl_privatekey:
+    path: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.key"
+    size: 4096
+    type: RSA
+    mode: "0600"
+    owner: root
+    group: root
+
+- name: Generate CSR with exact subject and SAN (IP only)
+  community.crypto.openssl_csr:
+    path: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.csr"
+    privatekey_path: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.key"
+    digest: sha256
+    subject:
+      countryName: "KH"
+      stateOrProvinceName: "PP"
+      localityName: "Phnom Penh"
+      organizationName: "BEGOINGTO Technology Co., Ltd."
+      organizationalUnitName: "IT"
+      commonName: "{{ ansible_host }}"
+    subject_alt_name:
+      - "DNS:localhost"
+      - "IP:127.0.0.1"
+      - "IP:{{ ansible_facts['default_ipv4']['address'] }}"
+      - "IP:{{ ansible_host }}"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Sign CSR with your own CA → create the final certificate
+  community.crypto.x509_certificate:
+    path: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.crt"
+    privatekey_path: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.key"
+    csr_path: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.csr"
+    provider: selfsigned
+    selfsigned_digest: sha256
+    selfsigned_not_before: "+0s"
+    selfsigned_not_after: "+365d"
+    mode: "0644"
+    force: "{{ force_ca | bool }}"
+    owner: root
+    group: root
+
+- name: Create a keystore for the given certificate/private key pair
+  community.general.java_keystore:
+    dest: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.jks"
+    name: "{{ logstash_ssl_filename }}"
+    keystore_type: "jks"
+    certificate_path: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.crt"
+    private_key_path: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.key"
+    password: "{{ keystore_pass }}"
+    mode: "0644"
+    force: "{{ force_ca | bool }}"
+    owner: root
+    group: logstash
+
+- name: Fetch {{ logstash_ssl_filename }}.crt to local
+  ansible.builtin.fetch:
+    src: "{{ logstash_ssl_dir }}/{{ logstash_ssl_filename }}.crt"
+    dest: "{{ role_path }}/files/"
+    flat: yes

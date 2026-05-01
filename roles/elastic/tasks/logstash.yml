@@ -1,5 +1,4 @@
 - name: Install java-21-amazon-corretto
-  become: true
   ansible.builtin.dnf:
     name: java-21-amazon-corretto
     state: present
@@ -9,42 +8,43 @@
   ansible.builtin.include_tasks: repo.yml
 
 - name: Install Logstash
-  become: true
   ansible.builtin.dnf:
     name: logstash-{{ elasticsearch_version }}
     state: present
     update_cache: yes
     enablerepo: elasticsearch
 
-- name: Create Logstash configuration with filebeat input and elasticsearch output
-  become: true
-  ansible.builtin.copy:
-    dest: /etc/filebeat/filebeat.yml
-    backup: true
-    content: |
-      input {
-        beats {
-          port => 5044
-        }
-      }
-      output {
-        elasticsearch {
-          hosts => ["{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
-          user => "admin"
-          password => "Admin@123"
-          ssl => true
-          ssl_certificate_authorities => "/etc/logstash/certs/elastic-stack-ca.pem"
-        }
+- name: include tasks SSL certificate
+  ansible.builtin.include_tasks: logstash-openssl.yml
 
-        stdout { codec => rubydebug }
-      }
+- name: Configure Logstash (logstash.yml)
+  ansible.builtin.template:
+    src: logstash.yml.j2
+    dest: /etc/logstash/logstash.yml
     mode: "0644"
   notify: Restart Logstash
 
 - name: Enable and start Elastic Logstash service
-  become: true
   ansible.builtin.systemd:
     name: logstash
     enabled: yes
     state: started
     daemon_reload: yes
+  no_log: true
+
+- name: Copy elasticsearch CA Certificate
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/full_{{ ssl_filename }}.pem"
+    dest: "{{ logstash_dir  }}/full_{{ ssl_filename }}.pem"
+    owner: root
+    group: logstash
+    mode: "0640"
+
+- name: Add filebeat Logstash input configuration
+  ansible.builtin.template:
+    src: filebeat-postgres.conf.j2
+    dest: "{{ logstash_dir }}/conf.d/filebeat-postgres.conf"
+    owner: root
+    group: logstash
+    mode: "0644"
+  notify: Restart Logstash
