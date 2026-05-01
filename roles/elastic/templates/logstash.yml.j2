@@ -1,5 +1,5 @@
-path.data: /var/lib/logstash
-path.logs: /var/log/logstash
+path.data: {{ logstash_data_dir }}
+path.logs: {{ logstash_log_dir }}
 
 api.enabled: true
 api.http.host: 0.0.0.0

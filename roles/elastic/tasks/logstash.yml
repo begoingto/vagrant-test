@@ -32,6 +32,13 @@
     daemon_reload: yes
   no_log: true
 
+# - name: Add plugin logstash-output-elasticsearch
+#   ansible.builtin.command: logstash-plugin install logstash-output-elasticsearch
+#   args:
+#     chdir: /usr/share/logstash/bin
+#     creates: /usr/share/logstash/logstash-core/lib/jars/logstash-output-elasticsearch-*.jar
+#   notify: Restart Logstash
+
 - name: Copy elasticsearch CA Certificate
   ansible.builtin.copy:
     src: "{{ role_path }}/files/full_{{ ssl_filename }}.pem"

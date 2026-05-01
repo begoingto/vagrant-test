@@ -17,5 +17,7 @@ kibana_ssl_dir: "/etc/kibana/ssl"
 kibana_ssl_filename: "kibana"
 
 logstash_dir: "/etc/logstash"
+logstash_data_dir: /var/lib/logstash
+logstash_log_dir: /var/log/logstash
 logstash_ssl_dir: "/etc/logstash/ssl"
 logstash_ssl_filename: "logstash"
