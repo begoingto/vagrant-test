@@ -1,0 +1,30 @@
+- name: Install PostgreSQL 17
+  ansible.builtin.apt:
+    name:
+      - postgresql-17
+      - postgresql-17-pgaudit
+    state: present
+
+- name: Fetch the config file
+  when: false
+  ansible.builtin.fetch:
+    src: /etc/postgresql/17/main/postgresql.conf
+    dest: "{{ role_path }}/files/ubuntu-postgresql.conf"
+    flat: yes
+
+- name: Ensure PostgreSQL is running and enabled
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: yes
+  no_log: true
+
+- name: template replace postgresql.conf
+  ansible.builtin.template:
+    src: ubuntu-postgresql.conf.j2
+    dest: /etc/postgresql/17/main/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: "0600"
+    backup: false
+  notify: Restart PostgreSQL

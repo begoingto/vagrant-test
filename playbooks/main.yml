@@ -62,3 +62,14 @@
   roles:
     - pgsql
   tags: pgsql
+
+- name: Configure Elastic Stack ELK
+  hosts: pgsql
+  become: true
+  gather_facts: false
+  tags: ubuntu
+  tasks:
+    - name: Import task ubuntu PostgreSQL
+      ansible.builtin.import_role:
+        name: pgsql
+        tasks_from: ubuntu.yml
