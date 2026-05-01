@@ -2,90 +2,23 @@
   ansible.builtin.include_tasks: repo.yml
 
 - name: Install Filebeat
-  become: true
   ansible.builtin.dnf:
     name: filebeat-{{ elasticsearch_version }}
     state: present
     update_cache: yes
     enablerepo: elasticsearch
 
-- name: Configure filebeat.yml (small VM + cluster friendly)
-  become: true
-  ansible.builtin.copy:
-    dest: /etc/filebeat/filebeat.yml
-    backup: true
-    content: |
-      filebeat.inputs:
-        - type: filestream
-          id: my-filestream-id
-          enabled: true
-          paths:
-            - /var/log/kibana/kibana.log
-          fields:
-            service: kibana
-      filebeat.config.modules:
-        path: ${path.config}/modules.d/*.yml
-        reload.enabled: false
-      setup.template.settings:
-        index.number_of_shards: 1
-      # setup.dashboards.enabled: true
-      # setup.kibana:
-      #   host: "localhost:5601"
-      # output.logstash:
-      #   hosts: ["localhost:5044"]
-      output.elasticsearch:
-        hosts: ["{{ hostvars['elastic-node1']['ansible_host'] }}:9200"]
-        protocol: "https"
-        username: "admin"
-        password: "Admin@123"
-        preset: balanced
-        ssl:
-          certificate_authorities: |
-            -----BEGIN CERTIFICATE-----
-            MIIFajCCA1KgAwIBAgIVALkXnbqIR7KD7laZtN7MZvuq+geqMA0GCSqGSIb3DQEB
-            CwUAMDwxOjA4BgNVBAMTMUVsYXN0aWNzZWFyY2ggc2VjdXJpdHkgYXV0by1jb25m
-            aWd1cmF0aW9uIEhUVFAgQ0EwHhcNMjYwNDA1MDUzNzAzWhcNMjkwNDA0MDUzNzAz
-            WjA8MTowOAYDVQQDEzFFbGFzdGljc2VhcmNoIHNlY3VyaXR5IGF1dG8tY29uZmln
-            dXJhdGlvbiBIVFRQIENBMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA
-            tLgzfhqt9HRc8bum/fBva4EHHT/6MW4ErhLVLXEL/39FT0HKD4eS0NNq3064X8y9
-            NOm6edDYOvMiczm3bZYPHTz2C8RhCjM15mTqAH+HpS7tt6G4epKRpx5OM4gF4I4S
-            o+qyw5frQSF97fK+BikLUfZZjeWFAVAUg/hdCZG0bxzgzLO8gQsDz0aNV/peZv02
-            L/kALOttFe/CIHa6L2rPCIgUJPsm56flRea+zrsMEx/46V1APoa0eYETyN12hLJh
-            Hiy461kxW3DuLJ4/4kC2L1w4OpWO3uCDeN1TxqvW4hoGcgB4uQSZ0GiBj2kLhLaB
-            93sJygsFA6ycj6byou/FX5FTb2EELSGtYwzYGdmrAL9lzoeNTZraYUcAvY0wcgcY
-            1HwjP709WRSeH4oKiLEaKldyI/iBXA0KGoVl8BJeVK1aSLhXeOcieyM6DujtD3Gb
-            WUNuLkCj+L4z5NaIJ1Q/+6gaeqpbHMRxo3Q5WIn6TGeLW3RR/8cAQzG/PXiuFtyt
-            MSSB5IpZkYHjVSPn9jMzavYEwBKUXgDawwYRpsqXBWF+0DQDC0vaAiw9UVkUHHjp
-            41dhmMIy+UklYZU86tjqlfsAQx5cw9XKuKwrsAVxY5Bok632/5/Sd+HkReOi1UKT
-            Qwdxx9e6Pshm0olyudqFS6vGAWMXH2kv8WabyVQOCUMCAwEAAaNjMGEwHQYDVR0O
-            BBYEFGwQRF/8OO/zASpabruOmHQFuWMoMB8GA1UdIwQYMBaAFGwQRF/8OO/zASpa
-            bruOmHQFuWMoMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQDAgEGMA0GCSqG
-            SIb3DQEBCwUAA4ICAQANMlPqTy1zZwW5tVKqyp/xwgtxADBwzoxqwo180nTsMH/u
-            /Y4r/BQzn2kWAFoiN9bqQioUpdJ2FtobuHtsCHZDtuZUHLn1TmYhuFv8oQYelvh8
-            MNPPMQvWjSR47ZVY3Z1+8IQ5o3jgiD8LmNyhPgRTpE/RmaE85MTQlfGUmlaSnSlM
-            AQTb6yMv5QGlTKhbydbhSWI+dKZid+kfjOgD9keKoGogNp/7SKvP85o9QbooAuD2
-            1hpZ8034iv09Qc/4cARicIQnlvxnRGwmwWPBOGEBNHADf8g1JQPs7aEvDPsF6Hop
-            ZLnTaDkjIEtNa6MTPRrPAxiZatwdT0bX3mjvbmCb4cbCNtoA1Qw62WOCI9XPB+Bk
-            Joey3C0qcYqrzsZkd0mMMK9e1p0rNEJKziYqV4jvSbqZu1GRcZctD6jrHvuimKdp
-            aEJZh7R/p1aAnfspeadyaZZvk8Qz38bJTl4X3fL1BpizCsQfHOfrmgXlxEQ3g7uX
-            96kczNxR//pWriM6dQYTE+X+mdHrQqXF59tiCkMlrzhjJTIyM7kCGHSMKSQqMVR1
-            OomzkyscIw46Fci94CFRBMxjXLmTgnLzKkus6Jag3qKzQykDSgMkH9pQFDEPdu6a
-            Pgc0L53ORr9yAtzck4AJJGL4b/dw/a4sCArGpv29fdbgQLnOf7ZykvMwsnxd1w==
-            -----END CERTIFICATE-----
-          verification_mode: certificate
-      processors:
-        - add_host_metadata:
-            when.not.contains.tags: forwarded
-        - add_cloud_metadata: ~
-        - add_docker_metadata: ~
-        - add_kubernetes_metadata: ~
-    mode: "0644"
-  notify: Restart Filebeat
-
 - name: Enable and start Filebeat service
-  become: true
   ansible.builtin.systemd:
     name: filebeat
     enabled: yes
     state: started
     daemon_reload: yes
+  no_log: true
+
+- name: Configure Filebeat (filebeat.yml)
+  ansible.builtin.template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+    mode: "0644"
+  notify: Restart Filebeat
