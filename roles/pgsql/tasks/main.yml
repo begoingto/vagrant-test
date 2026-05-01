@@ -1,6 +1,7 @@
 - name: Install PostgreSQL 17
   ansible.builtin.dnf:
-    name: postgresql17-server
+    name:
+      - postgresql17-server
     state: present
 
 - name: Initialize PostgreSQL database
