@@ -2,8 +2,22 @@ filebeat.inputs:
   - type: filestream
     id: postgres-csv
     paths:
-      - /var/lib/pgsql/data/log/postgresql-*.csv
-    tags: ["postgres"]
+      - /var/lib/postgresql/17/main/log/*.csv
+    prospector.scanner.check_interval: 1s
+    fields:
+      service_type: postgresql
+      log_type: audit
+    tags: [ "postgres" ]
+
+  - type: filestream
+    id: docker-log
+    stream: stdout
+    paths:
+      - /var/lib/docker/containers/*/*.log
+    fields:
+      service_type: docker
+      env: production
+    tags: [ "docker" ]
 
 filebeat.config.modules:
   path: ${path.config}/modules.d/*.yml
@@ -16,7 +30,7 @@ output.elasticsearch:
   enabled: false
 
 output.logstash:
-  hosts: [ "localhost:5044" ]
+  hosts: [ "192.168.56.23:5044" ]
 
 processors:
   - add_host_metadata:
@@ -24,3 +38,9 @@ processors:
   - add_cloud_metadata: ~
   - add_docker_metadata: ~
   - add_kubernetes_metadata: ~
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
+  - decode_json_fields:
+      fields: [ "message" ]
+      target: "json"
+      overwrite_keys: true
