@@ -5,16 +5,46 @@ input {
 }
 
 output {
-  elasticsearch {
-    hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
-    ssl_certificate_authorities => ["/etc/logstash/{{ ssl_filename }}.crt"]
-    ssl_verification_mode => "full"
-    data_stream => "true"
-    data_stream_type => "logs"
-    data_stream_dataset => "gitlab"
-    data_stream_namespace => "production"
-    user => "elastic"
-    password => "Admin@123"
+  if "gitlab-rails" in [tags] {
+    elasticsearch {
+      hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
+      ssl_certificate_authorities => ["/etc/logstash/{{ ssl_filename }}.crt"]
+      ssl_verification_mode => "full"
+      data_stream => "true"
+      data_stream_type => "logs"
+      data_stream_dataset => "gitlab-rails"
+      data_stream_namespace => "production"
+      user => "elastic"
+      password => "Admin@123"
+    }
+  }
+
+  if "gitlab-gitaly" in [tags] {
+    elasticsearch {
+      hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
+      ssl_certificate_authorities => ["/etc/logstash/{{ ssl_filename }}.crt"]
+      ssl_verification_mode => "full"
+      data_stream => "true"
+      data_stream_type => "logs"
+      data_stream_dataset => "gitlab-gitaly"
+      data_stream_namespace => "production"
+      user => "elastic"
+      password => "Admin@123"
+    }
+  }
+  
+  if "gitlab-nginx" in [tags] {
+    elasticsearch {
+      hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
+      ssl_certificate_authorities => ["/etc/logstash/{{ ssl_filename }}.crt"]
+      ssl_verification_mode => "full"
+      data_stream => "true"
+      data_stream_type => "logs"
+      data_stream_dataset => "gitlab-nginx"
+      data_stream_namespace => "production"
+      user => "elastic"
+      password => "Admin@123"
+    }
   }
 
   stdout { codec => rubydebug }

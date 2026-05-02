@@ -1,14 +1,39 @@
 filebeat.inputs:
+  # - type: filestream
+  #   id: gitlab-rails
+  #   paths:
+  #     - /var/log/gitlab/gitlab-rails/*json.log
+  #   parsers:
+  #     - ndjson:
+  #         target: ""
+  #         add_error_key: true
+  #         overwrite_keys: true
+  #   tags: ["gitlab-rails"]
+
   - type: filestream
-    id: gitlab-rails
+    id: gitlab-gitaly
     paths:
-      - /var/log/gitlab/gitlab-rails/*json.log
+      - /var/log/gitlab/gitaly/current
     parsers:
       - ndjson:
           target: ""
           add_error_key: true
           overwrite_keys: true
-    tags: ["gitlab"]
+    tags: ["gitlab-gitaly"]
+
+  - type: filestream
+    id: gitlab-nginx
+    paths:
+      - /var/log/gitlab/nginx/gitlab_access.log
+    processors:
+      - grok:
+          field: "message"
+          patterns:
+            - '%{IPORHOST:source.ip} - %{DATA:user.name} \[%{HTTPDATE:timestamp}\] "%{WORD:http.request.method} %{DATA:url.path} HTTP/%{NUMBER:http.version}" %{NUMBER:http.response.status_code:int} %{NUMBER:http.response.body.bytes:int} "%{DATA:http.request.referrer}" "%{DATA:user_agent.original}"( %{NUMBER:event.duration:float})?'
+      - date:
+          field: "timestamp"
+          formats: ["dd/MMM/yyyy:HH:mm:ss Z"]
+    tags: ["gitlab-nginx"]
 
 filebeat.config.modules:
   path: ${path.config}/modules.d/*.yml
