@@ -1,0 +1,21 @@
+input {
+  beats {
+    port => 5044
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
+    ssl_certificate_authorities => ["/etc/logstash/{{ ssl_filename }}.crt"]
+    ssl_verification_mode => "full"
+    data_stream => "true"
+    data_stream_type => "logs"
+    data_stream_dataset => "postgresql"
+    data_stream_namespace => "production"
+    user => "elastic"
+    password => "Admin@123"
+  }
+
+  stdout { codec => rubydebug }
+}

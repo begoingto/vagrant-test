@@ -1,0 +1,16 @@
+- name: Copy elasticsearch CA Certificate
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/{{ ssl_filename }}.crt"
+    dest: "{{ logstash_dir  }}/{{ ssl_filename }}.crt"
+    owner: root
+    group: logstash
+    mode: "0640"
+
+- name: Add filebeat Logstash input configuration
+  ansible.builtin.template:
+    src: logstash-default.conf.j2
+    dest: "{{ logstash_dir }}/conf.d/default.conf"
+    owner: root
+    group: logstash
+    mode: "0644"
+  notify: Restart Logstash
