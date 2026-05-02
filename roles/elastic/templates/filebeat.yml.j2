@@ -2,7 +2,7 @@ filebeat.inputs:
   - type: filestream
     id: postgres-csv
     paths:
-      - /var/lib/pgsql/data/log/postgresql-Fri.csv
+      - /var/lib/pgsql/data/log/postgresql-*.csv
 
 filebeat.config.modules:
   path: ${path.config}/modules.d/*.yml
