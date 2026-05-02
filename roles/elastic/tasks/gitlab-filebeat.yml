@@ -1,0 +1,24 @@
+- name: include tasks for repository setup
+  ansible.builtin.include_tasks: repo.yml
+
+- name: Install Filebeat
+  ansible.builtin.dnf:
+    name: filebeat-{{ elasticsearch_version }}
+    state: present
+    update_cache: yes
+    enablerepo: elasticsearch
+
+- name: Enable and start Filebeat service
+  ansible.builtin.systemd:
+    name: filebeat
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  no_log: true
+
+- name: Configure Filebeat (filebeat.yml)
+  ansible.builtin.template:
+    src: gitlab-filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+    mode: "0644"
+  notify: Restart Filebeat

@@ -25,11 +25,17 @@
     - name: Import task to create elastic logstash
       ansible.builtin.import_role:
         name: elastic
-        tasks_from: default-logstash.yml
-      tags: ldefault
+        tasks_from: gitlab-logstash.yml
+      tags: lgitlab
 
     - name: Import task to create elastic filebeat
       ansible.builtin.import_role:
         name: elastic
         tasks_from: filebeat.yml
       tags: filebeat
+
+    - name: Import task to create elastic logstash
+      ansible.builtin.import_role:
+        name: elastic
+        tasks_from: gitlab-filebeat.yml
+      tags: fgitlab

@@ -8,8 +8,8 @@
 
 - name: Add filebeat Logstash input configuration
   ansible.builtin.template:
-    src: logstash-default.conf.j2
-    dest: "{{ logstash_dir }}/conf.d/default.conf"
+    src: logstash-gitlab.conf.j2
+    dest: "{{ logstash_dir }}/conf.d/gitlab.conf"
     owner: root
     group: logstash
     mode: "0644"

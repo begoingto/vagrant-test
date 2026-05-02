@@ -36,15 +36,6 @@
   environment:
     EXTERNAL_URL: "{{ ansible_host }}:5050"
     GITLAB_ROOT_EMAIL: "begoingto.me@gmail.com"
-    # GITLAB_ROOT_PASSWORD: ""
-# - name: Replace Config File
-#   ansible.builtin.template:
-#     src: gitlab.rb.j2
-#     dest: /etc/gitlab/gitlab.rb
-#     owner: root
-#     group: root
-#     mode: "0600"
-#   notify: Reconfigure Gitlab
 
 - name: Ensure GitLab is enabled and started
   ansible.builtin.service:
