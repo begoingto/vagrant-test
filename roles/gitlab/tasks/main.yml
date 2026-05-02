@@ -8,34 +8,45 @@
       - cronie
     state: present
 
-- name: Download the GitLab repository setup script
-  ansible.builtin.get_url:
-    url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh
-    dest: /tmp/gitlab-ce-repo-setup.sh
-    mode: "0755"
+- name: Import all GitLab GPG keys
+  ansible.builtin.rpm_key:
+    state: present
+    key: "{{ item }}"
+  loop:
+    - https://packages.gitlab.com/gpgkey/gpg.key
+    - https://packages.gitlab.com/gpgkey/gitlab/3D645A26AB9FBD22.pub.gpg
+    - https://packages.gitlab.com/gpgkey/gitlab/CB947AD886C8E8FD.pub.gpg
 
-- name: Execute the GitLab repository setup script
-  ansible.builtin.command: /tmp/gitlab-ce-repo-setup.sh
-  args:
-    creates: /etc/yum.repos.d/gitlab_gitlab-ce.repo
-  environment:
-    os: "{{ ansible_facts['distribution'] | lower }}"
-    dist: "{{ ansible_facts['distribution_major_version'] }}"
-  changed_when: false
+- name: Add GitLab CE binary repository
+  ansible.builtin.yum_repository:
+    name: gitlab_gitlab-ce
+    description: gitlab_gitlab-ce
+    baseurl: "https://packages.gitlab.com/gitlab/gitlab-ce/amazon/2023/$basearch"
+    enabled: yes
+    gpgcheck: yes
+    repo_gpgcheck: yes
+    sslverify: yes
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+    metadata_expire: 300
+    state: present
 
-- name: Clean up the setup script (optional)
-  ansible.builtin.file:
-    path: /tmp/gitlab-ce-repo-setup.sh
-    state: absent
+- name: Add GitLab CE source repository
+  ansible.builtin.yum_repository:
+    name: gitlab_gitlab-ce-source
+    description: gitlab_gitlab-ce-source
+    baseurl: "https://packages.gitlab.com/gitlab/gitlab-ce/amazon/2023/SRPMS"
+    enabled: yes
+    gpgcheck: yes
+    repo_gpgcheck: yes
+    sslverify: yes
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+    metadata_expire: 300
+    state: present
 
 - name: Install GitLab CE
   ansible.builtin.dnf:
-    name: "gitlab-ce-18.10.0-ce.0.amazon2023"
+    name: "gitlab-ce-18.11.2-ce.0.amazon2023"
     state: present
-    disable_gpg_check: false
-  environment:
-    EXTERNAL_URL: "{{ ansible_host }}:5050"
-    GITLAB_ROOT_EMAIL: "begoingto.me@gmail.com"
 
 - name: Ensure GitLab is enabled and started
   ansible.builtin.service:
