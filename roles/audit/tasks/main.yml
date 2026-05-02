@@ -1,0 +1,108 @@
+- name: Set variables
+  set_fact:
+    ssg_source_dir: /opt/scap-security-guide-0.1.80
+    ssg_version: "0.1.80"
+    list_compliance: [ "cis" ] # "stig", "cui"
+
+- name: "Ensure /opt/scap-security-guide-{{ssg_version}} directory exists"
+  ansible.builtin.stat:
+    path: "{{ ssg_source_dir }}"
+  register: ssg_dir
+
+- name: Install OpenSCAP scanner
+  apt:
+    name:
+      - openscap-scanner
+      - libopenscap25t64
+      - openscap-common
+      - openscap-scanner
+      - wget
+      - unzip
+      - curl
+    state: present
+
+- name: Ensure report directory exists
+  when: not ssg_dir.stat.exists
+  block:
+    - name: Download SCAP Security Guide repository
+      ansible.builtin.get_url:
+        url: "https://github.com/ComplianceAsCode/content/releases/download/v{{
+          ssg_version }}/scap-security-guide-{{ ssg_version }}.zip"
+        dest: "/tmp/scap-security-guide-{{ ssg_version }}.zip"
+        mode: "0644"
+      register: download_ssg
+      until: download_ssg is succeeded
+      retries: 3
+      delay: 10
+
+    - name: Unzip SCAP Security Guide
+      ansible.builtin.unarchive:
+        src: "/tmp/scap-security-guide-{{ ssg_version }}.zip"
+        dest: /opt/
+        remote_src: yes
+      when: download_ssg is succeeded
+
+- name: Set release without dot (e.g., 2404)
+  set_fact:
+    release_no_dot: "{{ ansible_distribution_version | replace('.', '') }}"
+    report_file: "{{ansible_hostname}}_oscap_report_{{ now(utc=True,
+      fmt='%Y%m%d%H%M') }}.html"
+    results_file: "{{ansible_hostname}}_oscap_results_{{ now(utc=True,
+      fmt='%Y%m%d%H%M') }}.xml"
+
+- name: create temp directory for oscap results
+  file:
+    state: directory
+    path: /tmp/oscap_results
+    mode: "0755"
+
+- name: create temp directory for oscap reports
+  file:
+    state: directory
+    path: /tmp/oscap_reports
+    mode: "0755"
+
+- name: "Run OpenSCAP evaluation (example: CIS Level 2 Server profile)"
+  become: true
+  when: "{{ 'cis' in list_compliance }}"
+  shell: oscap xccdf eval \ --fetch-remote-resources \ --profile
+    "xccdf_org.ssgproject.content_profile_cis_level2_server" \ --results-arf
+    "/tmp/oscap_results/cis-{{results_file}}" \ --report
+    "/tmp/oscap_reports/cis_{{ report_file }}"
+    "{{ssg_source_dir}}/ssg-ubuntu{{release_no_dot}}-ds.xml"
+  ignore_errors: true
+
+- name: "Run OpenSCAP stig evaluation (example: STIG profile)"
+  become: true
+  when: "{{ 'stig' in list_compliance }}"
+  shell: oscap xccdf eval \ --fetch-remote-resources \ --profile
+    "xccdf_org.ssgproject.content_profile_stig" \ --results-arf
+    "/tmp/oscap_results/stig-{{results_file}}" \ --report
+    "/tmp/oscap_reports/stig_{{ report_file }}"
+    "{{ssg_source_dir}}/ssg-ubuntu{{release_no_dot}}-ds.xml"
+  ignore_errors: true
+
+- name: "Run OpenSCAP cui evaluation (example: CUI profile)"
+  become: true
+  when: "{{ 'cui' in list_compliance }}"
+  shell: oscap xccdf eval \ --fetch-remote-resources \ --profile
+    "xccdf_org.ssgproject.content_profile_cui" \ --results-arf
+    "/tmp/oscap_results/cui-{{results_file}}" \ --report
+    "/tmp/oscap_reports/cui_{{ report_file }}"
+    "{{ssg_source_dir}}/ssg-ubuntu{{release_no_dot}}-ds.xml"
+  ignore_errors: true
+
+- name: Download report  to control node
+  fetch:
+    src: "/tmp/oscap_reports/{{item}}_{{ report_file }}"
+    dest: "{{ role_path }}/files/{{item}}_{{report_file}}"
+    flat: yes
+  loop: "{{ list_compliance }}"
+
+- name: Clean up temp oscap results directory
+  file:
+    state: absent
+    path: "{{ item }}"
+  loop:
+    - /tmp/oscap_results
+    - /tmp/oscap_reports
