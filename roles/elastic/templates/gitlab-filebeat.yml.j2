@@ -2,7 +2,12 @@ filebeat.inputs:
   - type: filestream
     id: gitlab-rails
     paths:
-      - /var/log/gitlab/gitlab-rails/*.log
+      - /var/log/gitlab/gitlab-rails/*json.log
+    parsers:
+      - ndjson:
+          target: ""
+          add_error_key: true
+          overwrite_keys: true
     tags: ["gitlab"]
 
 filebeat.config.modules:
