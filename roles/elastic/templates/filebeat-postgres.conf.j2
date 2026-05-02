@@ -5,7 +5,6 @@ input {
 }
 
 filter {
-
   if "postgres" in [tags] {
     csv {
       separator => ","
@@ -24,34 +23,33 @@ filter {
       match => [ "log_time", "yyyy-MM-dd HH:mm:ss.SSS Z" ]
       target => "@timestamp"
     }
-
-    mutate {
-      add_field => {
-        "[@metadata][dataset]" => "postgresql"
-        "[@metadata][namespace]" => "prod"
-      }
-    }
-  }
-
-  if "docker" in [tags] {
-    mutate {
-      add_field => {
-        "[@metadata][dataset]" => "docker"
-        "[@metadata][namespace]" => "prod"
-      }
-    }
   }
 }
 
 output {
-  elasticsearch {
-    hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
-    data_stream => "true"
-    data_stream_type => "logs"
-    data_stream_dataset => "%{[@metadata][dataset]}"
-    data_stream_namespace => "%{[@metadata][namespace]}"
-    user => "elastic"
-    password => "Admin@123"
+  if "postgres" in [tags] {
+    elasticsearch {
+      hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
+      data_stream => "true"
+      data_stream_type => "logs"
+      data_stream_dataset => "postgresql"
+      data_stream_namespace => "production"
+      user => "elastic"
+      password => "Admin@123"
+    }
   }
+
+  if "docker" in [tags] {
+    elasticsearch {
+      hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
+      data_stream => "true"
+      data_stream_type => "logs"
+      data_stream_dataset => "docker"
+      data_stream_namespace => "production"
+      user => "elastic"
+      password => "Admin@123"
+    }
+  }
+
   stdout { codec => rubydebug }
 }
