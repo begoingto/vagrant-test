@@ -5,22 +5,41 @@ input {
 }
 
 filter {
-  csv {
-    separator => ","
-    skip_header => true
-    skip_empty_columns => true
-    columns => [
-      "log_time", "user_name", "database_name", "process_id", "connection_from",
-      "session_id", "session_line_num", "command_tag", "session_start_time",
-      "virtual_transaction_id", "transaction_id", "error_severity", "sql_state_code",
-      "message", "detail", "hint", "internal_query", "internal_query_pos",
-      "context", "query", "query_pos", "location", "application_name"
-    ]
+
+  if "postgres" in [tags] {
+    csv {
+      separator => ","
+      skip_header => true
+      skip_empty_columns => true
+      columns => [
+        "log_time", "user_name", "database_name", "process_id", "connection_from",
+        "session_id", "session_line_num", "command_tag", "session_start_time",
+        "virtual_transaction_id", "transaction_id", "error_severity", "sql_state_code",
+        "message", "detail", "hint", "internal_query", "internal_query_pos",
+        "context", "query", "query_pos", "location", "application_name"
+      ]
+    }
+
+    date {
+      match => [ "log_time", "yyyy-MM-dd HH:mm:ss.SSS Z" ]
+      target => "@timestamp"
+    }
+
+    mutate {
+      add_field => {
+        "[@metadata][dataset]" => "postgresql"
+        "[@metadata][namespace]" => "prod"
+      }
+    }
   }
 
-  date {
-    match => [ "log_time", "yyyy-MM-dd HH:mm:ss.SSS Z" ]
-    target => "@timestamp"
+  if "docker" in [tags] {
+    mutate {
+      add_field => {
+        "[@metadata][dataset]" => "docker"
+        "[@metadata][namespace]" => "prod"
+      }
+    }
   }
 }
 
@@ -29,8 +48,8 @@ output {
     hosts => ["https://{{ hostvars['elk1']['ansible_host'] }}:9200"]
     data_stream => "true"
     data_stream_type => "logs"
-    data_stream_dataset => "postgresql"
-    data_stream_namespace => "production"
+    data_stream_dataset => "%{[@metadata][dataset]}"
+    data_stream_namespace => "%{[@metadata][namespace]}"
     user => "elastic"
     password => "Admin@123"
   }

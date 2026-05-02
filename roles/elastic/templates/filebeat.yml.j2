@@ -3,6 +3,7 @@ filebeat.inputs:
     id: postgres-csv
     paths:
       - /var/lib/pgsql/data/log/postgresql-*.csv
+    tags: ["postgres"]
 
 filebeat.config.modules:
   path: ${path.config}/modules.d/*.yml
